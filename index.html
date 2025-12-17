@@ -15,305 +15,234 @@
 --muted:#888;
 }
 
-*{box-sizing:border-box;font-family:system-ui}
-body{margin:0;background:var(--bg);color:var(--text)}
-
-.hidden{display:none}
-.center{display:flex;align-items:center;justify-content:center;height:100vh}
-
-.card{
-background:var(--card);
-padding:20px;
-border-radius:14px;
-box-shadow:0 0 30px rgba(0,0,0,.7)
-}
-
-input,button{
-width:100%;
-padding:14px;
-margin:6px 0;
-border-radius:10px;
-border:none;
-background:#222;
-color:#fff;
-font-size:16px
-}
-
-button{
-background:var(--accent);
-font-weight:600
-}
-
-button.danger{background:var(--danger)}
-button.success{background:var(--success)}
-
-nav{
-position:fixed;
-bottom:0;
-width:100%;
-display:flex;
-background:#111;
-border-top:1px solid #222
-}
-
-nav button{
-flex:1;
-border-radius:0;
-background:#111;
-color:#aaa;
-padding:10px 0;
-font-size:14px;
-}
-
-nav button.active{
-background:var(--accent);
-color:#fff
-}
-
-.section{padding:15px 15px 90px}
-.product{
-background:#1c1c1c;
-padding:15px;
-border-radius:12px;
-margin-bottom:10px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.modal{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.85);
-display:flex;
-align-items:center;
-justify-content:center;
-z-index:1000
-}
-.modal-content{
-background:var(--card);
-padding:20px;
-border-radius:12px;
-min-width:280px;
-text-align:center;
-}
-.modal-content button{
-margin-top:15px;
-width:100%;
-padding:10px;
-font-size:16px;
-}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text);}
+.hidden{display:none;}
+.center{display:flex;align-items:center;justify-content:center;height:100vh;}
+.card{background:var(--card);padding:20px;border-radius:14px;box-shadow:0 0 30px rgba(0,0,0,.7);}
+input,button{width:100%;padding:14px;margin:6px 0;border-radius:10px;border:none;font-size:16px;}
+input{background:#222;color:#fff;}
+button{background:var(--accent);color:#fff;font-weight:600;cursor:pointer;}
+button:hover{opacity:0.9;}
+button.success{background:var(--success);}
+button.danger{background:var(--danger);}
+nav{position:fixed;bottom:0;width:100%;display:flex;background:#111;border-top:1px solid #222;}
+nav button{flex:1;border-radius:0;background:#111;color:#aaa;padding:10px 0;font-size:14px;}
+nav button.active{background:var(--accent);color:#fff;}
+.section{padding:15px 15px 90px;}
+.product{background:#1c1c1c;padding:15px;border-radius:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.modal-content{background:var(--card);padding:20px;border-radius:12px;min-width:280px;text-align:center;}
+.modal-content button{margin-top:15px;width:100%;padding:10px;font-size:16px;}
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
 <div id="login" class="center">
-<div class="card" style="width:320px">
-<h2>🔐 Logowanie</h2>
-<input type="password" id="loginPass" placeholder="Wpisz PIN">
-<button id="loginBtn">Zaloguj</button>
-</div>
+  <div class="card" style="width:320px">
+    <h2>🔐 Logowanie</h2>
+    <input type="password" id="loginPass" placeholder="Wpisz PIN">
+    <button id="loginBtn">Zaloguj</button>
+  </div>
 </div>
 
 <!-- OTWARCIE KASY -->
 <div id="cashOpen" class="center hidden">
-<div class="card" style="width:320px">
-<h2>💰 Otwarcie kasy</h2>
-<input type="number" id="cashStart" placeholder="Stan początkowy">
-<button id="openCashBtn" class="success">Otwórz kasę</button>
-</div>
+  <div class="card" style="width:320px">
+    <h2>💰 Otwarcie kasy</h2>
+    <input type="number" id="cashStart" placeholder="Stan początkowy">
+    <button id="openCashBtn" class="success">Otwórz kasę</button>
+  </div>
 </div>
 
 <!-- APP -->
 <div id="app" class="hidden">
-<div id="sale" class="section"></div>
-<div id="orders" class="section hidden"></div>
-<div id="stock" class="section hidden"></div>
-<div id="clients" class="section hidden"></div>
-<div id="settings" class="section hidden"></div>
+  <div id="sale" class="section"></div>
+  <div id="orders" class="section hidden"></div>
+  <div id="stock" class="section hidden"></div>
+  <div id="clients" class="section hidden"></div>
+  <div id="settings" class="section hidden"></div>
 
-<nav>
-<button data-section="sale" class="active">🧾 Sprzedaż</button>
-<button data-section="orders">📦 Zamówienia</button>
-<button data-section="stock">📊 Magazyn</button>
-<button data-section="clients">👥 Klienci</button>
-<button data-section="settings">⚙️ Ustawienia</button>
-</nav>
+  <nav>
+    <button data-section="sale" class="active">🧾 Sprzedaż</button>
+    <button data-section="orders">📦 Zamówienia</button>
+    <button data-section="stock">📊 Magazyn</button>
+    <button data-section="clients">👥 Klienci</button>
+    <button data-section="settings">⚙️ Ustawienia</button>
+  </nav>
 </div>
 
 <!-- MODAL -->
 <div id="modal" class="modal hidden">
-<div class="modal-content" id="modalContent"></div>
+  <div class="modal-content" id="modalContent"></div>
 </div>
 
 <script>
-const PIN = "1312";
+const PIN="1312";
 let state = JSON.parse(localStorage.getItem("pos")) || {
-cash:false,
-products:[
-{id:1,name:"Produkt A",price:10,stock:5},
-{id:2,name:"Produkt B",price:20,stock:0},
-{id:3,name:"Produkt C",price:30,stock:10}
-],
-cart:[],
-orders:[],
-clients:[]
-}
+  cash:false,
+  products:[
+    {id:1,name:"Produkt A",price:10,stock:5},
+    {id:2,name:"Produkt B",price:20,stock:0},
+    {id:3,name:"Produkt C",price:30,stock:10}
+  ],
+  cart:[],
+  orders:[],
+  clients:[]
+};
 
-const loginDiv = document.getElementById("login");
-const cashOpen = document.getElementById("cashOpen");
-const app = document.getElementById("app");
-const modal = document.getElementById("modal");
-const modalContent = document.getElementById("modalContent");
+const loginDiv=document.getElementById("login");
+const cashOpen=document.getElementById("cashOpen");
+const app=document.getElementById("app");
+const modal=document.getElementById("modal");
+const modalContent=document.getElementById("modalContent");
+const loginBtn=document.getElementById("loginBtn");
+const loginInput=document.getElementById("loginPass");
+const openCashBtn=document.getElementById("openCashBtn");
 
 // --- LOGIN ---
-document.getElementById("loginBtn").addEventListener("click",()=>{
-let pass = document.getElementById("loginPass").value;
-if(pass===PIN){
-loginDiv.classList.add("hidden");
-cashOpen.classList.remove("hidden");
-}else alert("Niepoprawny PIN");
-})
+function login(){
+  let pass = loginInput.value.trim();
+  if(pass===PIN){
+    loginDiv.classList.add("hidden");
+    cashOpen.classList.remove("hidden");
+  }else{
+    alert("Niepoprawny PIN!");
+    loginInput.value="";
+    loginInput.focus();
+  }
+}
+loginBtn.addEventListener("click",login);
+loginInput.addEventListener("keyup",(e)=>{if(e.key==="Enter") login();});
 
 // --- OTWARCIE KASY ---
-document.getElementById("openCashBtn").addEventListener("click",()=>{
-state.cash=true;
-localStorage.setItem("pos",JSON.stringify(state));
-cashOpen.classList.add("hidden");
-app.classList.remove("hidden");
-renderSale();
-})
+openCashBtn.addEventListener("click",()=>{
+  state.cash=true;
+  localStorage.setItem("pos",JSON.stringify(state));
+  cashOpen.classList.add("hidden");
+  app.classList.remove("hidden");
+  renderSale();
+});
 
 // --- NAWIGACJA ---
 document.querySelectorAll("nav button").forEach(btn=>{
-btn.addEventListener("click",(e)=>{
-document.querySelectorAll(".section").forEach(s=>s.classList.add("hidden"));
-document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
-btn.classList.add("active");
-document.getElementById(btn.dataset.section).classList.remove("hidden");
-if(btn.dataset.section==="sale") renderSale();
-if(btn.dataset.section==="orders") renderOrders();
-if(btn.dataset.section==="stock") renderStock();
-if(btn.dataset.section==="clients") renderClients();
-if(btn.dataset.section==="settings") renderSettings();
-})
-})
+  btn.addEventListener("click",(e)=>{
+    document.querySelectorAll(".section").forEach(s=>s.classList.add("hidden"));
+    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.section).classList.remove("hidden");
+    if(btn.dataset.section==="sale") renderSale();
+    if(btn.dataset.section==="orders") renderOrders();
+    if(btn.dataset.section==="stock") renderStock();
+    if(btn.dataset.section==="clients") renderClients();
+    if(btn.dataset.section==="settings") renderSettings();
+  })
+});
 
 // --- RENDER SALE ---
 function renderSale(){
-if(!state.cash) return alert("Najpierw otwórz kasę!");
-const saleDiv = document.getElementById("sale");
-saleDiv.innerHTML="<h2>Sprzedaż</h2>";
-state.products.forEach(p=>{
-let div = document.createElement("div");
-div.className="product";
-div.innerHTML=`<div>${p.name} <br> ${p.price} zł <br>Stan: ${p.stock}</div><button>Dodaj</button>`;
-div.querySelector("button").addEventListener("click",()=>{
-addToCart(p.id);
-});
-saleDiv.appendChild(div);
-});
-let payBtn = document.createElement("button");
-payBtn.textContent="Zapłać";
-payBtn.className="success";
-payBtn.addEventListener("click",()=>checkout());
-saleDiv.appendChild(payBtn);
-
-let orderBtn = document.createElement("button");
-orderBtn.textContent="Zamówienie";
-orderBtn.className="accent";
-orderBtn.addEventListener("click",()=>createOrder());
-saleDiv.appendChild(orderBtn);
+  if(!state.cash) return alert("Najpierw otwórz kasę!");
+  const saleDiv = document.getElementById("sale");
+  saleDiv.innerHTML="<h2>Sprzedaż</h2>";
+  state.products.forEach(p=>{
+    let div=document.createElement("div");
+    div.className="product";
+    div.innerHTML=`<div>${p.name}<br>${p.price} zł<br>Stan: ${p.stock}</div><button>Dodaj</button>`;
+    div.querySelector("button").addEventListener("click",()=>addToCart(p.id));
+    saleDiv.appendChild(div);
+  });
+  let payBtn=document.createElement("button");
+  payBtn.textContent="Zapłać"; payBtn.className="success";
+  payBtn.addEventListener("click",checkout); saleDiv.appendChild(payBtn);
+  let orderBtn=document.createElement("button");
+  orderBtn.textContent="Zamówienie"; orderBtn.className="accent";
+  orderBtn.addEventListener("click",createOrder); saleDiv.appendChild(orderBtn);
 }
 
 // --- KOSZYK ---
 function addToCart(id){
-let p = state.products.find(x=>x.id===id);
-if(p.stock<=0){
-let pin=prompt("Brak stanu! Wpisz PIN aby sprzedać:");
-if(pin!==PIN) return;
-}
-state.cart.push({...p});
-localStorage.setItem("pos",JSON.stringify(state));
-alert(p.name+" dodano do koszyka");
+  let p = state.products.find(x=>x.id===id);
+  if(p.stock<=0){
+    let pin = prompt("Brak stanu! Wpisz PIN aby sprzedać:");
+    if(pin!==PIN) return;
+  }
+  state.cart.push({...p});
+  localStorage.setItem("pos",JSON.stringify(state));
+  alert(p.name+" dodano do koszyka");
 }
 
 // --- PŁATNOŚĆ ---
 function checkout(){
-if(state.cart.length===0) return alert("Koszyk pusty");
-let total=state.cart.reduce((s,p)=>s+p.price,0);
-let paid=parseFloat(prompt("Do zapłaty: "+total+" zł\nKwota otrzymana:"));
-if(isNaN(paid) || paid<total) return alert("Niepoprawna kwota!");
-let change = paid-total;
-state.cart.forEach(c=>{
-let prod = state.products.find(p=>p.id===c.id);
-if(prod.stock>0) prod.stock--;
-});
-state.cart=[];
-localStorage.setItem("pos",JSON.stringify(state));
-modalContent.innerHTML=`<h3>Sprzedaż zakończona</h3>
-Zapłacono: ${paid} zł <br>
-Reszta: ${change} zł
-<button onclick="closeModal()">OK</button>`;
-modal.classList.remove("hidden");
+  if(state.cart.length===0) return alert("Koszyk pusty");
+  let total = state.cart.reduce((s,p)=>s+p.price,0);
+  let paid=parseFloat(prompt("Do zapłaty: "+total+" zł\nKwota otrzymana:"));
+  if(isNaN(paid) || paid<total) return alert("Niepoprawna kwota!");
+  let change=paid-total;
+  state.cart.forEach(c=>{
+    let prod=state.products.find(p=>p.id===c.id);
+    if(prod.stock>0) prod.stock--;
+  });
+  state.cart=[];
+  localStorage.setItem("pos",JSON.stringify(state));
+  modalContent.innerHTML=`<h3>Sprzedaż zakończona</h3>Zapłacono: ${paid} zł<br>Reszta: ${change} zł<button onclick="closeModal()">OK</button>`;
+  modal.classList.remove("hidden");
 }
 
 // --- ZAMÓWIENIA ---
 function createOrder(){
-if(state.cart.length===0) return alert("Koszyk pusty");
-let paidNow = confirm("Zapłacone teraz?");
-state.orders.push({items:[...state.cart],paid:paidNow});
-state.cart=[];
-localStorage.setItem("pos",JSON.stringify(state));
-alert("Zamówienie zapisane");
+  if(state.cart.length===0) return alert("Koszyk pusty");
+  let paidNow=confirm("Zapłacone teraz?");
+  state.orders.push({items:[...state.cart],paid:paidNow});
+  state.cart=[];
+  localStorage.setItem("pos",JSON.stringify(state));
+  alert("Zamówienie zapisane");
 }
 
 // --- RENDER ORDERS ---
 function renderOrders(){
-const ordersDiv=document.getElementById("orders");
-ordersDiv.innerHTML="<h2>Zamówienia</h2>";
-state.orders.forEach((o,i)=>{
-let div=document.createElement("div");
-div.className="product";
-div.innerHTML=`<div>Zamówienie #${i+1} | ${o.paid?"Opłacone":"Przy odbiorze"} | Ilość: ${o.items.length}</div>`;
-ordersDiv.appendChild(div);
-});
+  const ordersDiv=document.getElementById("orders");
+  ordersDiv.innerHTML="<h2>Zamówienia</h2>";
+  state.orders.forEach((o,i)=>{
+    let div=document.createElement("div");
+    div.className="product";
+    div.innerHTML=`<div>Zamówienie #${i+1} | ${o.paid?"Opłacone":"Przy odbiorze"} | Ilość: ${o.items.length}</div>`;
+    ordersDiv.appendChild(div);
+  });
 }
 
 // --- RENDER STOCK ---
 function renderStock(){
-const stockDiv=document.getElementById("stock");
-stockDiv.innerHTML="<h2>Magazyn</h2>";
-state.products.forEach(p=>{
-let div=document.createElement("div");
-div.className="product";
-div.innerHTML=`<div>${p.name} | Stan: ${p.stock}</div>`;
-stockDiv.appendChild(div);
-});
+  const stockDiv=document.getElementById("stock");
+  stockDiv.innerHTML="<h2>Magazyn</h2>";
+  state.products.forEach(p=>{
+    let div=document.createElement("div");
+    div.className="product";
+    div.innerHTML=`<div>${p.name} | Stan: ${p.stock}</div>`;
+    stockDiv.appendChild(div);
+  });
 }
 
 // --- RENDER CLIENTS ---
 function renderClients(){
-const clientsDiv=document.getElementById("clients");
-clientsDiv.innerHTML="<h2>Klienci</h2>";
-state.clients.forEach(c=>{
-let div=document.createElement("div");
-div.className="product";
-div.textContent=c.name;
-clientsDiv.appendChild(div);
-});
+  const clientsDiv=document.getElementById("clients");
+  clientsDiv.innerHTML="<h2>Klienci</h2>";
+  state.clients.forEach(c=>{
+    let div=document.createElement("div");
+    div.className="product";
+    div.textContent=c.name;
+    clientsDiv.appendChild(div);
+  });
 }
 
 // --- SETTINGS ---
 function renderSettings(){
-const settingsDiv=document.getElementById("settings");
-settingsDiv.innerHTML="<h2>Ustawienia sklepu</h2><p>TODO: ustawienia</p>";
+  const settingsDiv=document.getElementById("settings");
+  settingsDiv.innerHTML="<h2>Ustawienia sklepu</h2><p>TODO: konfiguracja sklepu</p>";
 }
 
 // --- MODAL ---
 function closeModal(){modal.classList.add("hidden");}
-
 </script>
+
 </body>
 </html>
