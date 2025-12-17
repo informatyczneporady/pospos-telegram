@@ -3,252 +3,245 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POS Telegram Web App</title>
+<title>Dark POS PRO</title>
+
 <style>
-  /* Reset i podstawowy styl */
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-  body { background: #121212; color: #fff; }
-  button { cursor: pointer; }
+:root{
+--bg:#0b0b0b;
+--card:#161616;
+--accent:#2979ff;
+--success:#2ecc71;
+--danger:#e74c3c;
+--text:#f2f2f2;
+--muted:#888;
+}
 
-  /* Główne kontenery */
-  #app { max-width: 1200px; margin: auto; padding: 10px; }
+*{box-sizing:border-box;font-family:system-ui}
+body{margin:0;background:var(--bg);color:var(--text)}
 
-  .section { display: none; padding-bottom: 60px; }
-  .active { display: block; }
+.hidden{display:none}
+.center{display:flex;align-items:center;justify-content:center;height:100vh}
 
-  /* Karty produktów */
-  #products { display: grid; grid-template-columns: repeat(auto-fill,minmax(120px,1fr)); gap: 10px; }
-  .product-card { background: #1e1e1e; padding: 10px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-  .product-card button { margin-top: 5px; padding: 5px 10px; background: #4CAF50; color: #fff; border: none; border-radius: 4px; }
+.card{
+background:var(--card);
+padding:20px;
+border-radius:14px;
+box-shadow:0 0 30px rgba(0,0,0,.7)
+}
 
-  /* Koszyk */
-  #cart { margin-top: 10px; background: #1e1e1e; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-  #cart h2 { margin-bottom: 10px; }
-  #cart ul { list-style: none; max-height: 200px; overflow-y: auto; }
-  #cart li { display: flex; justify-content: space-between; margin-bottom: 5px; }
+input,button{
+width:100%;
+padding:14px;
+margin:6px 0;
+border-radius:10px;
+border:none;
+background:#222;
+color:#fff;
+font-size:16px
+}
 
-  /* Formularze i pola */
-  input, select { padding: 5px; margin: 5px 0; width: 100%; background: #1e1e1e; color: #fff; border: 1px solid #333; border-radius: 5px; }
-  .btn { padding: 8px 12px; border: none; border-radius: 6px; background: #2196F3; color: #fff; margin-top: 5px; }
-  .btn:hover { background: #1976D2; }
+button{
+background:var(--accent);
+font-weight:600
+}
 
-  /* Dolne menu */
-  nav.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; background: #1e1e1e; border-top: 1px solid #333; padding: 5px 0; }
-  nav.bottom-nav button { flex: 1; margin: 0 2px; padding: 10px 0; background: #333; color: #fff; border-radius: 8px; font-size: 0.9rem; }
-  nav.bottom-nav button.active { background: #2196F3; }
+button.danger{background:var(--danger)}
+button.success{background:var(--success)}
 
-  /* Modal podsumowania */
-  .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
-  .modal-content { background: #1e1e1e; padding: 20px; border-radius: 10px; text-align: center; width: 300px; }
-  .modal-content p { margin: 10px 0; font-size: 1.2rem; }
-  .modal-content button { margin-top: 15px; width: 100%; }
+nav{
+position:fixed;
+bottom:0;
+width:100%;
+display:flex;
+background:#111;
+border-top:1px solid #222
+}
+
+nav button{
+flex:1;
+border-radius:0;
+background:#111;
+color:#aaa
+}
+
+nav button.active{
+background:var(--accent);
+color:#fff
+}
+
+.section{padding:15px 15px 90px}
+.product{
+background:#1c1c1c;
+padding:15px;
+border-radius:12px;
+margin-bottom:10px
+}
+
+.modal{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.8);
+display:flex;
+align-items:center;
+justify-content:center
+}
 </style>
 </head>
+
 <body>
-<div id="app">
-  <!-- Sekcja Sprzedaż -->
-  <div id="sale" class="section active">
-    <h2>Sprzedaż</h2>
-    <div id="products"></div>
-    <div id="cart">
-      <h2>Koszyk</h2>
-      <ul id="cart-items"></ul>
-      <p id="cart-total"></p>
-      <button class="btn" onclick="checkout()">Zapłać</button>
-    </div>
-  </div>
 
-  <!-- Sekcja Magazyn -->
-  <div id="stock" class="section">
-    <h2>Magazyn</h2>
-    <button class="btn" onclick="addStock()">Dodaj Towar (PIN)</button>
-    <button class="btn" onclick="removeStock()">Straty Towaru (PIN)</button>
-    <button class="btn" onclick="inventory()">Inwentaryzacja (PIN)</button>
-    <ul id="stock-list"></ul>
-  </div>
-
-  <!-- Sekcja Klienci -->
-  <div id="clients" class="section">
-    <h2>Klienci</h2>
-    <ul id="client-list"></ul>
-    <button class="btn" onclick="addClient()">Dodaj klienta</button>
-  </div>
-
-  <!-- Sekcja Promocje -->
-  <div id="promo" class="section">
-    <h2>Promocje i rabaty</h2>
-    <button class="btn" onclick="addPromo()">Dodaj promocję</button>
-    <ul id="promo-list"></ul>
-  </div>
-
-  <!-- Sekcja Ustawienia -->
-  <div id="settings" class="section">
-    <h2>Ustawienia sklepu</h2>
-    <label>Nazwa sklepu:</label><input id="storeName" type="text">
-    <label>Adres:</label><input id="storeAddress" type="text">
-    <label>NIP:</label><input id="storeNIP" type="text">
-    <label>VAT %:</label><input id="storeVAT" type="number">
-    <button class="btn" onclick="saveSettings()">Zapisz ustawienia</button>
-  </div>
+<!-- LOGIN -->
+<div id="login" class="center">
+<div class="card" style="width:320px">
+<h2>🔐 Logowanie</h2>
+<input type="password" id="loginPass" placeholder="Hasło">
+<button onclick="login()">Zaloguj</button>
+</div>
 </div>
 
-<!-- Modal podsumowania płatności -->
-<div id="payment-modal" class="modal">
-  <div class="modal-content">
-    <p id="paid-amount"></p>
-    <p id="change-amount"></p>
-    <button class="btn" onclick="closePaymentModal()">Zamknij</button>
-  </div>
+<!-- OPEN CASH -->
+<div id="cashOpen" class="center hidden">
+<div class="card" style="width:320px">
+<h2>💰 Otwarcie kasy</h2>
+<input type="number" id="cashStart" placeholder="Stan początkowy">
+<button class="success" onclick="openCash()">Otwórz kasę</button>
+</div>
 </div>
 
-<!-- Dolne menu -->
-<nav class="bottom-nav">
-  <button onclick="showSection('sale')" id="nav-sale" class="active">Sprzedaż</button>
-  <button onclick="showSection('stock')" id="nav-stock">Magazyn</button>
-  <button onclick="showSection('clients')" id="nav-clients">Klienci</button>
-  <button onclick="showSection('promo')" id="nav-promo">Promocje</button>
-  <button onclick="showSection('settings')" id="nav-settings">Ustawienia</button>
+<!-- APP -->
+<div id="app" class="hidden">
+
+<div id="sale" class="section"></div>
+<div id="orders" class="section hidden"></div>
+<div id="stock" class="section hidden"></div>
+<div id="settings" class="section hidden"></div>
+
+<nav>
+<button class="active" onclick="show('sale')">🧾 Sprzedaż</button>
+<button onclick="show('orders')">📦 Zamówienia</button>
+<button onclick="show('stock')">📊 Magazyn</button>
+<button onclick="show('settings')">⚙️ Ustawienia</button>
 </nav>
 
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal hidden"></div>
+
 <script>
-// --- Dane początkowe ---
-let products = JSON.parse(localStorage.getItem('products')) || [
-  {id:1,name:'Produkt A',price:10,stock:100},
-  {id:2,name:'Produkt B',price:20,stock:50},
-  {id:3,name:'Produkt C',price:30,stock:25}
-];
-let cart = [];
-let clients = JSON.parse(localStorage.getItem('clients')) || [];
-let promos = JSON.parse(localStorage.getItem('promos')) || [];
-let storeSettings = JSON.parse(localStorage.getItem('storeSettings')) || {name:'Sklep',address:'',NIP:'',VAT:23};
-
-// --- Wyświetlanie sekcji ---
-function showSection(id){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('nav-'+id).classList.add('active');
-  if(id==='sale') renderProducts();
-  if(id==='stock') renderStock();
-  if(id==='clients') renderClients();
-  if(id==='promo') renderPromos();
+const PIN="1312"
+let state=JSON.parse(localStorage.getItem("pos"))||{
+cash:false,
+products:[
+{id:1,name:"Produkt A",price:10,stock:5},
+{id:2,name:"Produkt B",price:20,stock:0}
+],
+cart:[],
+orders:[]
 }
 
-// --- Produkty i koszyk ---
-function renderProducts(){
-  const container = document.getElementById('products');
-  container.innerHTML='';
-  products.forEach(p=>{
-    let card=document.createElement('div'); card.className='product-card';
-    card.innerHTML=`<strong>${p.name}</strong><p>${p.price} zł</p><p>Stock: ${p.stock}</p>`;
-    let btn=document.createElement('button'); btn.textContent='Dodaj do koszyka';
-    btn.onclick=()=>addToCart(p.id);
-    card.appendChild(btn);
-    container.appendChild(card);
-  });
+function save(){localStorage.setItem("pos",JSON.stringify(state))}
+
+function login(){
+if(document.getElementById("loginPass").value===PIN){
+loginDiv.classList.add("hidden")
+cashOpen.classList.remove("hidden")
+}else alert("Złe hasło")
 }
 
-function renderCart(){
-  const list=document.getElementById('cart-items');
-  list.innerHTML='';
-  let total=0;
-  cart.forEach(item=>{
-    let li=document.createElement('li');
-    let lineTotal = item.price * item.quantity;
-    total+=lineTotal;
-    li.textContent=`${item.name} x${item.quantity} = ${lineTotal} zł`;
-    list.appendChild(li);
-  });
-  document.getElementById('cart-total').textContent=`Do zapłaty: ${total.toFixed(2)} zł`;
+function openCash(){
+state.cash=true
+save()
+cashOpen.classList.add("hidden")
+app.classList.remove("hidden")
+renderSale()
 }
 
-function addToCart(id){
-  let prod=products.find(p=>p.id===id);
-  if(!prod || prod.stock===0){ alert('Brak towaru!'); return; }
-  let cartItem=cart.find(c=>c.id===id);
-  if(cartItem){
-    if(cartItem.quantity<prod.stock) cartItem.quantity++;
-    else { alert('Brak wystarczającej ilości!'); return; }
-  } else cart.push({id:prod.id,name:prod.name,price:prod.price,quantity:1});
-  renderCart();
+function show(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.add("hidden"))
+document.getElementById(id).classList.remove("hidden")
+document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"))
+event.target.classList.add("active")
+if(id==="sale")renderSale()
+if(id==="orders")renderOrders()
+if(id==="stock")renderStock()
 }
 
-// --- Płatność z resztą ---
-function checkout(){
-  if(cart.length===0){ alert('Koszyk pusty!'); return; }
-  let total = cart.reduce((sum,item)=>sum+item.price*item.quantity,0);
-  let paid = parseFloat(prompt(`Kwota do zapłaty: ${total} zł\nIle klient płaci?`));
-  if(isNaN(paid) || paid<total){ alert('Niepoprawna kwota!'); return; }
-  let change = paid - total;
-
-  // Odejmowanie ze stanu magazynowego
-  cart.forEach(item=>{
-    let prod=products.find(p=>p.id===item.id);
-    prod.stock -= item.quantity;
-  });
-
-  saveData();
-  renderProducts();
-  renderCart();
-
-  // Pokaż modal z resztą
-  document.getElementById('paid-amount').textContent=`Klient zapłacił: ${paid.toFixed(2)} zł`;
-  document.getElementById('change-amount').textContent=`Reszta do wydania: ${change.toFixed(2)} zł`;
-  document.getElementById('payment-modal').style.display='flex';
-
-  cart=[]; // Wyczyść koszyk
+function renderSale(){
+sale.innerHTML="<h2>Sprzedaż</h2>"
+state.products.forEach(p=>{
+sale.innerHTML+=`
+<div class="product">
+<b>${p.name}</b><br>
+${p.price} zł | Stan: ${p.stock}
+<button onclick="add(${p.id})">Dodaj</button>
+</div>`
+})
+sale.innerHTML+=`<button onclick="pay()">Zapłać</button>
+<button onclick="order()">Zamówienie</button>`
 }
 
-function closePaymentModal(){ document.getElementById('payment-modal').style.display='none'; }
+function add(id){
+let p=state.products.find(x=>x.id===id)
+if(p.stock<=0){
+let pin=prompt("Brak stanu. PIN?")
+if(pin!==PIN)return
+}
+state.cart.push(p)
+save()
+}
 
-// --- Magazyn ---
+function pay(){
+let total=state.cart.reduce((s,p)=>s+p.price,0)
+let paid=prompt("Do zapłaty "+total+" zł\nKlient dał:")
+let change=paid-total
+state.cart.forEach(p=>{if(p.stock>0)p.stock--})
+state.cart=[]
+save()
+modal.innerHTML=`
+<div class="card">
+<h3>Sprzedaż</h3>
+Zapłacono: ${paid} zł<br>
+Reszta: ${change} zł
+<button onclick="closeModal()">OK</button>
+</div>`
+modal.classList.remove("hidden")
+}
+
+function order(){
+let paid=confirm("Zapłacone teraz?")
+state.orders.push({items:[...state.cart],paid})
+state.cart=[]
+save()
+alert("Zamówienie zapisane")
+}
+
+function renderOrders(){
+orders.innerHTML="<h2>Zamówienia</h2>"
+state.orders.forEach(o=>{
+orders.innerHTML+=`
+<div class="product">
+Zamówienie | ${o.paid?"Opłacone":"Przy odbiorze"}
+</div>`
+})
+}
+
 function renderStock(){
-  const list=document.getElementById('stock-list'); list.innerHTML='';
-  products.forEach(p=>{ let li=document.createElement('li'); li.textContent=`${p.name} - Stock: ${p.stock}`; list.appendChild(li); });
+stock.innerHTML="<h2>Magazyn</h2>"
+state.products.forEach(p=>{
+stock.innerHTML+=`<div class="product">${p.name}: ${p.stock}</div>`
+})
 }
 
-function addStock(){
-  let pin=prompt('Wpisz PIN:'); if(pin!=='1312'){ alert('Niepoprawny PIN!'); return; }
-  let prodId=parseInt(prompt('ID produktu:')); let qty=parseInt(prompt('Ilość:'));
-  let prod=products.find(p=>p.id===prodId); if(prod){ prod.stock+=qty; renderStock(); saveData(); } else alert('Nie znaleziono produktu!');
+function closeModal(){
+modal.classList.add("hidden")
 }
 
-function removeStock(){
-  let pin=prompt('Wpisz PIN:'); if(pin!=='1312'){ alert('Niepoprawny PIN!'); return; }
-  let prodId=parseInt(prompt('ID produktu:')); let qty=parseInt(prompt('Ilość do usunięcia:')); let reason=prompt('Powód straty:');
-  let prod=products.find(p=>p.id===prodId); if(prod){ prod.stock-=qty; if(prod.stock<0) prod.stock=0; renderStock(); saveData(); alert(`Strata: ${reason}`);} else alert('Nie znaleziono produktu!');
-}
+const loginDiv=document.getElementById("login")
+const cashOpen=document.getElementById("cashOpen")
+const app=document.getElementById("app")
+const modal=document.getElementById("modal")
 
-function inventory(){ let pin=prompt('Wpisz PIN:'); if(pin!=='1312'){ alert('Niepoprawny PIN!'); return; }
-  let report='Inwentaryzacja:\n'; products.forEach(p=>report+=`${p.name}: ${p.stock}\n`); alert(report);
-}
-
-// --- Klienci ---
-function renderClients(){ const list=document.getElementById('client-list'); list.innerHTML='';
-  clients.forEach(c=>{ let li=document.createElement('li'); li.textContent=`${c.name} - saldo: ${c.balance||0} zł, punkty: ${c.points||0}`; list.appendChild(li); });
-}
-
-function addClient(){ let name=prompt('Imię klienta:'); if(name) clients.push({name:name,balance:0,points:0}); renderClients(); saveData(); }
-
-// --- Promocje ---
-function renderPromos(){ const list=document.getElementById('promo-list'); list.innerHTML='';
-  promos.forEach(p=>{ let li=document.createElement('li'); li.textContent=`${p.name} - ${p.type} ${p.value}`; list.appendChild(li); });
-}
-
-function addPromo(){ let name=prompt('Nazwa promocji:'); let type=prompt('Typ (procent/kwota/2+1):'); let value=prompt('Wartość (jeśli dotyczy):'); if(name && type) promos.push({name,type,value}); renderPromos(); saveData(); }
-
-// --- Ustawienia sklepu ---
-function saveSettings(){ storeSettings.name=document.getElementById('storeName').value; storeSettings.address=document.getElementById('storeAddress').value; storeSettings.NIP=document.getElementById('storeNIP').value; storeSettings.VAT=parseFloat(document.getElementById('storeVAT').value); alert('Ustawienia zapisane!'); saveData(); }
-
-// --- Dane w localStorage ---
-function saveData(){ localStorage.setItem('products',JSON.stringify(products)); localStorage.setItem('clients',JSON.stringify(clients)); localStorage.setItem('promos',JSON.stringify(promos)); localStorage.setItem('storeSettings',JSON.stringify(storeSettings)); }
-
-// --- Inicjalizacja ---
-document.getElementById('storeName').value = storeSettings.name;
-document.getElementById('storeAddress').value = storeSettings.address;
-document.getElementById('storeNIP').value = storeSettings.NIP;
-document.getElementById('storeVAT').value = storeSettings.VAT;
-renderProducts(); renderCart(); renderStock(); renderClients(); renderPromos();
 </script>
 </body>
 </html>
