@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dark POS PRO</title>
-
 <style>
 :root{
 --bg:#0b0b0b;
@@ -61,7 +60,9 @@ nav button{
 flex:1;
 border-radius:0;
 background:#111;
-color:#aaa
+color:#aaa;
+padding:10px 0;
+font-size:14px;
 }
 
 nav button.active{
@@ -74,173 +75,244 @@ color:#fff
 background:#1c1c1c;
 padding:15px;
 border-radius:12px;
-margin-bottom:10px
+margin-bottom:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
 .modal{
 position:fixed;
 inset:0;
-background:rgba(0,0,0,.8);
+background:rgba(0,0,0,.85);
 display:flex;
 align-items:center;
-justify-content:center
+justify-content:center;
+z-index:1000
+}
+.modal-content{
+background:var(--card);
+padding:20px;
+border-radius:12px;
+min-width:280px;
+text-align:center;
+}
+.modal-content button{
+margin-top:15px;
+width:100%;
+padding:10px;
+font-size:16px;
 }
 </style>
 </head>
-
 <body>
 
 <!-- LOGIN -->
 <div id="login" class="center">
 <div class="card" style="width:320px">
 <h2>🔐 Logowanie</h2>
-<input type="password" id="loginPass" placeholder="Hasło">
-<button onclick="login()">Zaloguj</button>
+<input type="password" id="loginPass" placeholder="Wpisz PIN">
+<button id="loginBtn">Zaloguj</button>
 </div>
 </div>
 
-<!-- OPEN CASH -->
+<!-- OTWARCIE KASY -->
 <div id="cashOpen" class="center hidden">
 <div class="card" style="width:320px">
 <h2>💰 Otwarcie kasy</h2>
 <input type="number" id="cashStart" placeholder="Stan początkowy">
-<button class="success" onclick="openCash()">Otwórz kasę</button>
+<button id="openCashBtn" class="success">Otwórz kasę</button>
 </div>
 </div>
 
 <!-- APP -->
 <div id="app" class="hidden">
-
 <div id="sale" class="section"></div>
 <div id="orders" class="section hidden"></div>
 <div id="stock" class="section hidden"></div>
+<div id="clients" class="section hidden"></div>
 <div id="settings" class="section hidden"></div>
 
 <nav>
-<button class="active" onclick="show('sale')">🧾 Sprzedaż</button>
-<button onclick="show('orders')">📦 Zamówienia</button>
-<button onclick="show('stock')">📊 Magazyn</button>
-<button onclick="show('settings')">⚙️ Ustawienia</button>
+<button data-section="sale" class="active">🧾 Sprzedaż</button>
+<button data-section="orders">📦 Zamówienia</button>
+<button data-section="stock">📊 Magazyn</button>
+<button data-section="clients">👥 Klienci</button>
+<button data-section="settings">⚙️ Ustawienia</button>
 </nav>
-
 </div>
 
 <!-- MODAL -->
-<div id="modal" class="modal hidden"></div>
+<div id="modal" class="modal hidden">
+<div class="modal-content" id="modalContent"></div>
+</div>
 
 <script>
-const PIN="1312"
-let state=JSON.parse(localStorage.getItem("pos"))||{
+const PIN = "1312";
+let state = JSON.parse(localStorage.getItem("pos")) || {
 cash:false,
 products:[
 {id:1,name:"Produkt A",price:10,stock:5},
-{id:2,name:"Produkt B",price:20,stock:0}
+{id:2,name:"Produkt B",price:20,stock:0},
+{id:3,name:"Produkt C",price:30,stock:10}
 ],
 cart:[],
-orders:[]
+orders:[],
+clients:[]
 }
 
-function save(){localStorage.setItem("pos",JSON.stringify(state))}
+const loginDiv = document.getElementById("login");
+const cashOpen = document.getElementById("cashOpen");
+const app = document.getElementById("app");
+const modal = document.getElementById("modal");
+const modalContent = document.getElementById("modalContent");
 
-function login(){
-if(document.getElementById("loginPass").value===PIN){
-loginDiv.classList.add("hidden")
-cashOpen.classList.remove("hidden")
-}else alert("Złe hasło")
-}
+// --- LOGIN ---
+document.getElementById("loginBtn").addEventListener("click",()=>{
+let pass = document.getElementById("loginPass").value;
+if(pass===PIN){
+loginDiv.classList.add("hidden");
+cashOpen.classList.remove("hidden");
+}else alert("Niepoprawny PIN");
+})
 
-function openCash(){
-state.cash=true
-save()
-cashOpen.classList.add("hidden")
-app.classList.remove("hidden")
-renderSale()
-}
+// --- OTWARCIE KASY ---
+document.getElementById("openCashBtn").addEventListener("click",()=>{
+state.cash=true;
+localStorage.setItem("pos",JSON.stringify(state));
+cashOpen.classList.add("hidden");
+app.classList.remove("hidden");
+renderSale();
+})
 
-function show(id){
-document.querySelectorAll(".section").forEach(s=>s.classList.add("hidden"))
-document.getElementById(id).classList.remove("hidden")
-document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"))
-event.target.classList.add("active")
-if(id==="sale")renderSale()
-if(id==="orders")renderOrders()
-if(id==="stock")renderStock()
-}
+// --- NAWIGACJA ---
+document.querySelectorAll("nav button").forEach(btn=>{
+btn.addEventListener("click",(e)=>{
+document.querySelectorAll(".section").forEach(s=>s.classList.add("hidden"));
+document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+btn.classList.add("active");
+document.getElementById(btn.dataset.section).classList.remove("hidden");
+if(btn.dataset.section==="sale") renderSale();
+if(btn.dataset.section==="orders") renderOrders();
+if(btn.dataset.section==="stock") renderStock();
+if(btn.dataset.section==="clients") renderClients();
+if(btn.dataset.section==="settings") renderSettings();
+})
+})
 
+// --- RENDER SALE ---
 function renderSale(){
-sale.innerHTML="<h2>Sprzedaż</h2>"
+if(!state.cash) return alert("Najpierw otwórz kasę!");
+const saleDiv = document.getElementById("sale");
+saleDiv.innerHTML="<h2>Sprzedaż</h2>";
 state.products.forEach(p=>{
-sale.innerHTML+=`
-<div class="product">
-<b>${p.name}</b><br>
-${p.price} zł | Stan: ${p.stock}
-<button onclick="add(${p.id})">Dodaj</button>
-</div>`
-})
-sale.innerHTML+=`<button onclick="pay()">Zapłać</button>
-<button onclick="order()">Zamówienie</button>`
+let div = document.createElement("div");
+div.className="product";
+div.innerHTML=`<div>${p.name} <br> ${p.price} zł <br>Stan: ${p.stock}</div><button>Dodaj</button>`;
+div.querySelector("button").addEventListener("click",()=>{
+addToCart(p.id);
+});
+saleDiv.appendChild(div);
+});
+let payBtn = document.createElement("button");
+payBtn.textContent="Zapłać";
+payBtn.className="success";
+payBtn.addEventListener("click",()=>checkout());
+saleDiv.appendChild(payBtn);
+
+let orderBtn = document.createElement("button");
+orderBtn.textContent="Zamówienie";
+orderBtn.className="accent";
+orderBtn.addEventListener("click",()=>createOrder());
+saleDiv.appendChild(orderBtn);
 }
 
-function add(id){
-let p=state.products.find(x=>x.id===id)
+// --- KOSZYK ---
+function addToCart(id){
+let p = state.products.find(x=>x.id===id);
 if(p.stock<=0){
-let pin=prompt("Brak stanu. PIN?")
-if(pin!==PIN)return
+let pin=prompt("Brak stanu! Wpisz PIN aby sprzedać:");
+if(pin!==PIN) return;
 }
-state.cart.push(p)
-save()
+state.cart.push({...p});
+localStorage.setItem("pos",JSON.stringify(state));
+alert(p.name+" dodano do koszyka");
 }
 
-function pay(){
-let total=state.cart.reduce((s,p)=>s+p.price,0)
-let paid=prompt("Do zapłaty "+total+" zł\nKlient dał:")
-let change=paid-total
-state.cart.forEach(p=>{if(p.stock>0)p.stock--})
-state.cart=[]
-save()
-modal.innerHTML=`
-<div class="card">
-<h3>Sprzedaż</h3>
-Zapłacono: ${paid} zł<br>
+// --- PŁATNOŚĆ ---
+function checkout(){
+if(state.cart.length===0) return alert("Koszyk pusty");
+let total=state.cart.reduce((s,p)=>s+p.price,0);
+let paid=parseFloat(prompt("Do zapłaty: "+total+" zł\nKwota otrzymana:"));
+if(isNaN(paid) || paid<total) return alert("Niepoprawna kwota!");
+let change = paid-total;
+state.cart.forEach(c=>{
+let prod = state.products.find(p=>p.id===c.id);
+if(prod.stock>0) prod.stock--;
+});
+state.cart=[];
+localStorage.setItem("pos",JSON.stringify(state));
+modalContent.innerHTML=`<h3>Sprzedaż zakończona</h3>
+Zapłacono: ${paid} zł <br>
 Reszta: ${change} zł
-<button onclick="closeModal()">OK</button>
-</div>`
-modal.classList.remove("hidden")
+<button onclick="closeModal()">OK</button>`;
+modal.classList.remove("hidden");
 }
 
-function order(){
-let paid=confirm("Zapłacone teraz?")
-state.orders.push({items:[...state.cart],paid})
-state.cart=[]
-save()
-alert("Zamówienie zapisane")
+// --- ZAMÓWIENIA ---
+function createOrder(){
+if(state.cart.length===0) return alert("Koszyk pusty");
+let paidNow = confirm("Zapłacone teraz?");
+state.orders.push({items:[...state.cart],paid:paidNow});
+state.cart=[];
+localStorage.setItem("pos",JSON.stringify(state));
+alert("Zamówienie zapisane");
 }
 
+// --- RENDER ORDERS ---
 function renderOrders(){
-orders.innerHTML="<h2>Zamówienia</h2>"
-state.orders.forEach(o=>{
-orders.innerHTML+=`
-<div class="product">
-Zamówienie | ${o.paid?"Opłacone":"Przy odbiorze"}
-</div>`
-})
+const ordersDiv=document.getElementById("orders");
+ordersDiv.innerHTML="<h2>Zamówienia</h2>";
+state.orders.forEach((o,i)=>{
+let div=document.createElement("div");
+div.className="product";
+div.innerHTML=`<div>Zamówienie #${i+1} | ${o.paid?"Opłacone":"Przy odbiorze"} | Ilość: ${o.items.length}</div>`;
+ordersDiv.appendChild(div);
+});
 }
 
+// --- RENDER STOCK ---
 function renderStock(){
-stock.innerHTML="<h2>Magazyn</h2>"
+const stockDiv=document.getElementById("stock");
+stockDiv.innerHTML="<h2>Magazyn</h2>";
 state.products.forEach(p=>{
-stock.innerHTML+=`<div class="product">${p.name}: ${p.stock}</div>`
-})
+let div=document.createElement("div");
+div.className="product";
+div.innerHTML=`<div>${p.name} | Stan: ${p.stock}</div>`;
+stockDiv.appendChild(div);
+});
 }
 
-function closeModal(){
-modal.classList.add("hidden")
+// --- RENDER CLIENTS ---
+function renderClients(){
+const clientsDiv=document.getElementById("clients");
+clientsDiv.innerHTML="<h2>Klienci</h2>";
+state.clients.forEach(c=>{
+let div=document.createElement("div");
+div.className="product";
+div.textContent=c.name;
+clientsDiv.appendChild(div);
+});
 }
 
-const loginDiv=document.getElementById("login")
-const cashOpen=document.getElementById("cashOpen")
-const app=document.getElementById("app")
-const modal=document.getElementById("modal")
+// --- SETTINGS ---
+function renderSettings(){
+const settingsDiv=document.getElementById("settings");
+settingsDiv.innerHTML="<h2>Ustawienia sklepu</h2><p>TODO: ustawienia</p>";
+}
+
+// --- MODAL ---
+function closeModal(){modal.classList.add("hidden");}
 
 </script>
 </body>
