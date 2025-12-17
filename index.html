@@ -31,33 +31,19 @@ input,select{width:100%;padding:10px;border-radius:10px;border:none;margin:6px 0
   </div>
 </main>
 <script>
+// === PODSTAWOWE USTAWIENIA ===
 const PIN='1312';
-let products=JSON.parse(localStorage.getItem('products')||'[]');
-let cart=[];
-function save(){localStorage.setItem('products',JSON.stringify(products));}
-function render(){
- const p=document.getElementById('products');p.innerHTML='';
- products.forEach((x,i)=>{
-  const b=document.createElement('button');b.className='btn alt';
-  b.textContent=`${x.name} – ${x.price} zł`;
-  b.onclick=()=>{cart.push(x);renderCart();};p.appendChild(b);
- });
-}
-function renderCart(){
- const c=document.getElementById('cart');c.innerHTML='';let sum=0,profit=0;
- cart.forEach(x=>{sum+=x.price;profit+=x.price-x.cost;
-  const d=document.createElement('div');d.textContent=`${x.name} ${x.price} zł`;c.appendChild(d);
- });
- document.getElementById('profit').textContent=`Suma: ${sum} zł | Zysk: ${profit} zł`;
-}
-function addProduct(){
- const name=prompt('Nazwa');if(!name)return;
- const price=parseFloat(prompt('Cena sprzedaży'));
- const cost=parseFloat(prompt('Cena zakupu'));
- products.push({name,price,cost});save();render();
-}
-function pay(){alert('Sprzedaż zapisana');cart=[];renderCart();}
-render();
-</script>
+let payments=JSON.parse(localStorage.getItem('payments')||JSON.stringify(['Gotówka','BLIK','Konto klienta']));
+let clients=JSON.parse(localStorage.getItem('clients')||'[]');
+let sales=JSON.parse(localStorage.getItem('sales')||'[]');const PIN='1312'; let products=JSON.parse(localStorage.getItem('products')||'[]'); let cart=[]; function save(){localStorage.setItem('products',JSON.stringify(products));} function render(){ const p=document.getElementById('products');p.innerHTML=''; products.forEach((x,i)=>{ const b=document.createElement('button');b.className='btn alt'; b.textContent=${x.name} (${x.unit}) – ${x.price} zł; b.onclick=()=>{ const qty=parseFloat(prompt('Ilość ('+x.unit+')', '1'))||1; cart.push({...x, qty});renderCart(); };p.appendChild(b); }); } function renderCart(){ const c=document.getElementById('cart');c.innerHTML='';let sum=0,profit=0; cart.forEach(x=>{sum+=x.price*x.qty;profit+=(x.price-x.cost)*x.qty; const d=document.createElement('div');d.textContent=${x.name} ${x.qty}${x.unit} = ${x.price*x.qty} zł;c.appendChild(d); }); document.getElementById('profit').textContent=Suma: ${sum} zł | Zysk: ${profit} zł; } function addProduct(){ const name=prompt('Nazwa produktu');if(!name)return; const unit=prompt('Jednostka (szt, g, kg, l)','szt'); const price=parseFloat(prompt('Cena sprzedaży za jednostkę')); const cost=parseFloat(prompt('Cena zakupu za jednostkę')); products.push({name,unit,price,cost});save();render(); });save();render(); // MENU ADMINA window.addEventListener('keydown',e=>{ if(e.key==='F2')adminMenu(); }); function adminMenu(){ const pin=prompt('PIN');if(pin!==PIN)return alert('Błędny PIN'); const c=prompt('ADMIN: 1 Metody płatności 2 Klienci 3 Magazyn'); if(c==='1')editPayments(); if(c==='2')editClients(); if(c==='3')warehouseMenu(); } function editPayments(){ const a=prompt('Aktualne: '+payments.join(', ')+' Podaj nowe po przecinku'); if(!a)return;payments=a.split(',').map(x=>x.trim()); localStorage.setItem('payments',JSON.stringify(payments));alert('Zapisano'); } function editClients(){ const name=prompt('Imię klienta');if(!name)return; const saldo=parseFloat(prompt('Saldo (np 100 lub -50)'))||0; clients.push({name,saldo}); localStorage.setItem('clients',JSON.stringify(clients));alert('Dodano'); }
+
+} function pay(){ if(cart.length===0){alert('Koszyk pusty');return;} // sprawdź magazyn for(const x of cart){ if(stock[x.name]===undefined || stock[x.name] < x.qty){ alert('Brak towaru w magazynie: '+x.name); return; } } const method=prompt('Metoda płatności: '+payments.join(', ')); if(!payments.includes(method)){alert('Nieprawidłowa metoda');return;} let sum=0,profit=0; cart.forEach(x=>{sum+=x.price*x.qty;profit+=(x.price-x.cost)*x.qty; stock[x.name]-=x.qty;}); localStorage.setItem('stock',JSON.stringify(stock)); sales.push({date:new Date().toISOString(),sum,profit,method,items:cart}); localStorage.setItem('sales',JSON.stringify(sales)); alert('Sprzedaż OK Suma: '+sum+' zł Zysk: '+profit+' zł'); cart=[];renderCart(); } } render(); // === MAGAZYN === let stock=JSON.parse(localStorage.getItem('stock')||'{}'); function warehouseMenu(){ const a=prompt('MAGAZYN: 1 Dostawa towaru 2 Strata towaru 3 Inwentaryzacja'); if(a==='1')delivery(); if(a==='2')loss(); if(a==='3')inventory(); } function delivery(){ const pin=prompt('PIN');if(pin!==PIN)return alert('Błędny PIN'); const name=prompt('Nazwa produktu'); const qty=parseFloat(prompt('Ilość')); if(!stock[name])stock[name]=0; stock[name]+=qty; localStorage.setItem('stock',JSON.stringify(stock)); alert('Dostawa zapisana'); } function loss(){ const pin=prompt('PIN');if(pin!==PIN)return alert('Błędny PIN'); const name=prompt('Nazwa produktu'); const qty=parseFloat(prompt('Ilość straty')); const reason=prompt('Powód straty'); if(!stock[name])return alert('Brak produktu'); stock[name]-=qty; localStorage.setItem('stock',JSON.stringify(stock)); alert('Strata zapisana'); } function inventory(){ const pin=prompt('PIN');if(pin!==PIN)return alert('Błędny PIN'); const name=prompt('Nazwa produktu'); const real=parseFloat(prompt('Stan faktyczny')); stock[name]=real; localStorage.setItem('stock',JSON.stringify(stock)); alert('Inwentaryzacja OK'); } // === PROMOCJE 2+1 === let promoEnabled=true; function applyPromotions(cart){ let counts={}; cart.forEach(i=>{counts[i.name]=(counts[i.name]||0)+i.qty;}); cart.forEach(i=>{ if(promoEnabled && counts[i.name]>=3){ const free=Math.floor(counts[i.name]/3); i._promoFree=free; } else i._promoFree=0; }); }
+
+// === LOJALNOŚĆ === let loyalty=JSON.parse(localStorage.getItem('loyalty')||JSON.stringify({spend:20,points:100,value:2.5}));
+
+// === ZWROTY === function refund(){ const pin=prompt('PIN');if(pin!==PIN)return alert('Błędny PIN'); const reason=prompt('Powód zwrotu'); if(!reason)return; alert('Zwrot zapisany: '+reason); }
+
+// === NADPISANIE PAY Z PROMOCJĄ I LOJALNOŚCIĄ === function pay(){ if(cart.length===0){alert('Koszyk pusty');return;} applyPromotions(cart); for(const x of cart){ if(stock[x.name]===undefined || stock[x.name] < x.qty){alert('Brak towaru: '+x.name);return;} } const method=prompt('Metoda płatności: '+payments.join(', ')); let sum=0,profit=0; cart.forEach(x=>{ let chargeQty=x.qty-(x._promoFree||0); sum+=x.price*chargeQty; profit+=(x.price-x.cost)*chargeQty; stock[x.name]-=x.qty; }); let client=clients[0]; // prosty domyślny klient if(client){ const pts=Math.floor(sum/loyalty.spend)*loyalty.points; client.points=(client.points||0)+pts; localStorage.setItem('clients',JSON.stringify(clients)); } localStorage.setItem('stock',JSON.stringify(stock)); alert('Sprzedaż OK Suma: '+sum+' zł Zysk: '+profit+' zł'); cart=[];renderCart(); } </script>
+
 </body>
 </html>
