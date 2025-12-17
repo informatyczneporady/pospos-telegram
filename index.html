@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dark POS PRO</title>
+<title>Dark POS PRO - Full</title>
 <style>
 :root{
 --bg:#0b0b0b;
@@ -20,7 +20,7 @@ body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text);}
 .center{display:flex;align-items:center;justify-content:center;height:100vh;}
 .card{background:var(--card);padding:20px;border-radius:14px;box-shadow:0 0 30px rgba(0,0,0,.7);}
 input,button{width:100%;padding:14px;margin:6px 0;border-radius:10px;border:none;font-size:16px;}
-input{background:#222;color:#fff;}
+input{background:#222;color:#fff;text-align:center;font-weight:bold;}
 button{background:var(--accent);color:#fff;font-weight:600;cursor:pointer;}
 button:hover{opacity:0.9;}
 button.success{background:var(--success);}
@@ -39,16 +39,16 @@ nav button.active{background:var(--accent);color:#fff;}
 
 <!-- LOGIN -->
 <div id="login" class="center">
-  <div class="card" style="width:320px">
-    <h2>🔐 Logowanie</h2>
-    <input type="password" id="loginPass" placeholder="Wpisz PIN">
+  <div class="card" style="width:300px;">
+    <h2>🔐 Wpisz PIN</h2>
+    <input type="tel" id="pinInput" placeholder="PIN" inputmode="numeric" pattern="[0-9]*" maxlength="4">
     <button id="loginBtn">Zaloguj</button>
   </div>
 </div>
 
 <!-- OTWARCIE KASY -->
 <div id="cashOpen" class="center hidden">
-  <div class="card" style="width:320px">
+  <div class="card" style="width:300px;">
     <h2>💰 Otwarcie kasy</h2>
     <input type="number" id="cashStart" placeholder="Stan początkowy">
     <button id="openCashBtn" class="success">Otwórz kasę</button>
@@ -84,11 +84,21 @@ let state = JSON.parse(localStorage.getItem("pos")) || {
   products:[
     {id:1,name:"Produkt A",price:10,stock:5},
     {id:2,name:"Produkt B",price:20,stock:0},
-    {id:3,name:"Produkt C",price:30,stock:10}
+    {id:3,name:"Produkt C",price:30,stock:10},
+    {id:4,name:"Produkt D",price:15,stock:8},
+    {id:5,name:"Produkt E",price:50,stock:2}
   ],
   cart:[],
   orders:[],
-  clients:[]
+  clients:[
+    {id:1,name:"Jan Kowalski",points:20,balance:50},
+    {id:2,name:"Anna Nowak",points:10,balance:0}
+  ],
+  settings:{
+    storeName:"Sklep Testowy",
+    VAT:23,
+    currency:"PLN"
+  }
 };
 
 const loginDiv=document.getElementById("login");
@@ -97,23 +107,25 @@ const app=document.getElementById("app");
 const modal=document.getElementById("modal");
 const modalContent=document.getElementById("modalContent");
 const loginBtn=document.getElementById("loginBtn");
-const loginInput=document.getElementById("loginPass");
+const pinInput=document.getElementById("pinInput");
 const openCashBtn=document.getElementById("openCashBtn");
+
+window.onload = ()=>{pinInput.focus();};
 
 // --- LOGIN ---
 function login(){
-  let pass = loginInput.value.trim();
-  if(pass===PIN){
+  const value=pinInput.value.trim();
+  if(value===PIN){
     loginDiv.classList.add("hidden");
     cashOpen.classList.remove("hidden");
-  }else{
+  } else {
     alert("Niepoprawny PIN!");
-    loginInput.value="";
-    loginInput.focus();
+    pinInput.value="";
+    pinInput.focus();
   }
 }
 loginBtn.addEventListener("click",login);
-loginInput.addEventListener("keyup",(e)=>{if(e.key==="Enter") login();});
+pinInput.addEventListener("keyup",(e)=>{if(e.key==="Enter") login();});
 
 // --- OTWARCIE KASY ---
 openCashBtn.addEventListener("click",()=>{
@@ -142,28 +154,24 @@ document.querySelectorAll("nav button").forEach(btn=>{
 // --- RENDER SALE ---
 function renderSale(){
   if(!state.cash) return alert("Najpierw otwórz kasę!");
-  const saleDiv = document.getElementById("sale");
+  const saleDiv=document.getElementById("sale");
   saleDiv.innerHTML="<h2>Sprzedaż</h2>";
   state.products.forEach(p=>{
     let div=document.createElement("div");
     div.className="product";
-    div.innerHTML=`<div>${p.name}<br>${p.price} zł<br>Stan: ${p.stock}</div><button>Dodaj</button>`;
+    div.innerHTML=`<div>${p.name}<br>${p.price} ${state.settings.currency}<br>Stan: ${p.stock}</div><button>Dodaj</button>`;
     div.querySelector("button").addEventListener("click",()=>addToCart(p.id));
     saleDiv.appendChild(div);
   });
-  let payBtn=document.createElement("button");
-  payBtn.textContent="Zapłać"; payBtn.className="success";
-  payBtn.addEventListener("click",checkout); saleDiv.appendChild(payBtn);
-  let orderBtn=document.createElement("button");
-  orderBtn.textContent="Zamówienie"; orderBtn.className="accent";
-  orderBtn.addEventListener("click",createOrder); saleDiv.appendChild(orderBtn);
+  let payBtn=document.createElement("button"); payBtn.textContent="Zapłać"; payBtn.className="success"; payBtn.addEventListener("click",checkout); saleDiv.appendChild(payBtn);
+  let orderBtn=document.createElement("button"); orderBtn.textContent="Zamówienie"; orderBtn.className="accent"; orderBtn.addEventListener("click",createOrder); saleDiv.appendChild(orderBtn);
 }
 
-// --- KOSZYK ---
+// --- ADD TO CART ---
 function addToCart(id){
-  let p = state.products.find(x=>x.id===id);
+  let p=state.products.find(x=>x.id===id);
   if(p.stock<=0){
-    let pin = prompt("Brak stanu! Wpisz PIN aby sprzedać:");
+    let pin=prompt("Brak stanu! Wpisz PIN aby sprzedać:");
     if(pin!==PIN) return;
   }
   state.cart.push({...p});
@@ -171,24 +179,21 @@ function addToCart(id){
   alert(p.name+" dodano do koszyka");
 }
 
-// --- PŁATNOŚĆ ---
+// --- CHECKOUT ---
 function checkout(){
   if(state.cart.length===0) return alert("Koszyk pusty");
-  let total = state.cart.reduce((s,p)=>s+p.price,0);
-  let paid=parseFloat(prompt("Do zapłaty: "+total+" zł\nKwota otrzymana:"));
+  let total=state.cart.reduce((s,p)=>s+p.price,0);
+  let paid=parseFloat(prompt("Do zapłaty: "+total+" "+state.settings.currency+"\nKwota otrzymana:"));
   if(isNaN(paid) || paid<total) return alert("Niepoprawna kwota!");
   let change=paid-total;
-  state.cart.forEach(c=>{
-    let prod=state.products.find(p=>p.id===c.id);
-    if(prod.stock>0) prod.stock--;
-  });
+  state.cart.forEach(c=>{let prod=state.products.find(p=>p.id===c.id); if(prod.stock>0) prod.stock--;});
   state.cart=[];
   localStorage.setItem("pos",JSON.stringify(state));
-  modalContent.innerHTML=`<h3>Sprzedaż zakończona</h3>Zapłacono: ${paid} zł<br>Reszta: ${change} zł<button onclick="closeModal()">OK</button>`;
+  modalContent.innerHTML=`<h3>Sprzedaż zakończona</h3>Zapłacono: ${paid} ${state.settings.currency}<br>Reszta: ${change} ${state.settings.currency}<button onclick="closeModal()">OK</button>`;
   modal.classList.remove("hidden");
 }
 
-// --- ZAMÓWIENIA ---
+// --- CREATE ORDER ---
 function createOrder(){
   if(state.cart.length===0) return alert("Koszyk pusty");
   let paidNow=confirm("Zapłacone teraz?");
@@ -229,7 +234,7 @@ function renderClients(){
   state.clients.forEach(c=>{
     let div=document.createElement("div");
     div.className="product";
-    div.textContent=c.name;
+    div.innerHTML=`${c.name} | Punkty: ${c.points} | Saldo: ${c.balance} ${state.settings.currency}`;
     clientsDiv.appendChild(div);
   });
 }
@@ -237,7 +242,10 @@ function renderClients(){
 // --- SETTINGS ---
 function renderSettings(){
   const settingsDiv=document.getElementById("settings");
-  settingsDiv.innerHTML="<h2>Ustawienia sklepu</h2><p>TODO: konfiguracja sklepu</p>";
+  settingsDiv.innerHTML=`<h2>Ustawienia sklepu</h2>
+  <p>Nazwa sklepu: ${state.settings.storeName}</p>
+  <p>VAT: ${state.settings.VAT}%</p>
+  <p>Waluta: ${state.settings.currency}</p>`;
 }
 
 // --- MODAL ---
