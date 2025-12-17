@@ -7,57 +7,45 @@
 <style>
   /* Reset i podstawowy styl */
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-  body { background: #f5f5f5; color: #333; }
+  body { background: #121212; color: #fff; }
   button { cursor: pointer; }
-  
+
   /* Główne kontenery */
   #app { max-width: 1200px; margin: auto; padding: 10px; }
-  .section { display: none; }
+
+  .section { display: none; padding-bottom: 60px; }
   .active { display: block; }
-  
-  /* Nagłówek i menu */
-  header { display: flex; justify-content: space-between; align-items: center; background: #2196F3; color: #fff; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
-  header h1 { font-size: 1.5rem; }
-  nav button { margin-left: 5px; padding: 10px 15px; border: none; border-radius: 6px; background: #1976D2; color: #fff; font-size: 1rem; }
-  nav button:hover { background: #1565C0; }
-  
-  /* Sprzedaż */
+
+  /* Karty produktów */
   #products { display: grid; grid-template-columns: repeat(auto-fill,minmax(120px,1fr)); gap: 10px; }
-  .product-card { background: #fff; padding: 10px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  .product-card { background: #1e1e1e; padding: 10px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
   .product-card button { margin-top: 5px; padding: 5px 10px; background: #4CAF50; color: #fff; border: none; border-radius: 4px; }
-  
-  #cart { margin-top: 10px; background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+  /* Koszyk */
+  #cart { margin-top: 10px; background: #1e1e1e; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
   #cart h2 { margin-bottom: 10px; }
   #cart ul { list-style: none; max-height: 200px; overflow-y: auto; }
   #cart li { display: flex; justify-content: space-between; margin-bottom: 5px; }
-  
+
   /* Formularze i pola */
-  input, select { padding: 5px; margin: 5px 0; width: 100%; }
+  input, select { padding: 5px; margin: 5px 0; width: 100%; background: #1e1e1e; color: #fff; border: 1px solid #333; border-radius: 5px; }
   .btn { padding: 8px 12px; border: none; border-radius: 6px; background: #2196F3; color: #fff; margin-top: 5px; }
   .btn:hover { background: #1976D2; }
-  
-  /* Responsywność */
-  @media (max-width: 600px){
-    nav { flex-wrap: wrap; }
-    nav button { margin-top: 5px; flex: 1 1 48%; }
-    #products { grid-template-columns: repeat(auto-fill,minmax(100px,1fr)); }
-  }
+
+  /* Dolne menu */
+  nav.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; background: #1e1e1e; border-top: 1px solid #333; padding: 5px 0; }
+  nav.bottom-nav button { flex: 1; margin: 0 2px; padding: 10px 0; background: #333; color: #fff; border-radius: 8px; font-size: 0.9rem; }
+  nav.bottom-nav button.active { background: #2196F3; }
+
+  /* Modal podsumowania */
+  .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
+  .modal-content { background: #1e1e1e; padding: 20px; border-radius: 10px; text-align: center; width: 300px; }
+  .modal-content p { margin: 10px 0; font-size: 1.2rem; }
+  .modal-content button { margin-top: 15px; width: 100%; }
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <h1>💎 POS Telegram Web App</h1>
-    <nav>
-      <button onclick="showSection('sale')">Sprzedaż</button>
-      <button onclick="showSection('stock')">Magazyn</button>
-      <button onclick="showSection('clients')">Klienci</button>
-      <button onclick="showSection('promo')">Promocje</button>
-      <button onclick="showSection('settings')">Ustawienia</button>
-      <button onclick="adminPin()">Admin</button>
-    </nav>
-  </header>
-
   <!-- Sekcja Sprzedaż -->
   <div id="sale" class="section active">
     <h2>Sprzedaż</h2>
@@ -104,6 +92,24 @@
   </div>
 </div>
 
+<!-- Modal podsumowania płatności -->
+<div id="payment-modal" class="modal">
+  <div class="modal-content">
+    <p id="paid-amount"></p>
+    <p id="change-amount"></p>
+    <button class="btn" onclick="closePaymentModal()">Zamknij</button>
+  </div>
+</div>
+
+<!-- Dolne menu -->
+<nav class="bottom-nav">
+  <button onclick="showSection('sale')" id="nav-sale" class="active">Sprzedaż</button>
+  <button onclick="showSection('stock')" id="nav-stock">Magazyn</button>
+  <button onclick="showSection('clients')" id="nav-clients">Klienci</button>
+  <button onclick="showSection('promo')" id="nav-promo">Promocje</button>
+  <button onclick="showSection('settings')" id="nav-settings">Ustawienia</button>
+</nav>
+
 <script>
 // --- Dane początkowe ---
 let products = JSON.parse(localStorage.getItem('products')) || [
@@ -116,25 +122,26 @@ let clients = JSON.parse(localStorage.getItem('clients')) || [];
 let promos = JSON.parse(localStorage.getItem('promos')) || [];
 let storeSettings = JSON.parse(localStorage.getItem('storeSettings')) || {name:'Sklep',address:'',NIP:'',VAT:23};
 
-// --- Funkcje wyświetlania ---
+// --- Wyświetlanie sekcji ---
 function showSection(id){
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('nav-'+id).classList.add('active');
   if(id==='sale') renderProducts();
   if(id==='stock') renderStock();
   if(id==='clients') renderClients();
   if(id==='promo') renderPromos();
 }
 
+// --- Produkty i koszyk ---
 function renderProducts(){
   const container = document.getElementById('products');
   container.innerHTML='';
   products.forEach(p=>{
-    let card = document.createElement('div');
-    card.className='product-card';
+    let card=document.createElement('div'); card.className='product-card';
     card.innerHTML=`<strong>${p.name}</strong><p>${p.price} zł</p><p>Stock: ${p.stock}</p>`;
-    let btn = document.createElement('button');
-    btn.textContent='Dodaj do koszyka';
+    let btn=document.createElement('button'); btn.textContent='Dodaj do koszyka';
     btn.onclick=()=>addToCart(p.id);
     card.appendChild(btn);
     container.appendChild(card);
@@ -142,10 +149,10 @@ function renderProducts(){
 }
 
 function renderCart(){
-  const list = document.getElementById('cart-items');
+  const list=document.getElementById('cart-items');
   list.innerHTML='';
   let total=0;
-  cart.forEach((item,index)=>{
+  cart.forEach(item=>{
     let li=document.createElement('li');
     let lineTotal = item.price * item.quantity;
     total+=lineTotal;
@@ -155,148 +162,93 @@ function renderCart(){
   document.getElementById('cart-total').textContent=`Do zapłaty: ${total.toFixed(2)} zł`;
 }
 
-// --- Koszyk i sprzedaż ---
 function addToCart(id){
-  let prod = products.find(p=>p.id===id);
+  let prod=products.find(p=>p.id===id);
   if(!prod || prod.stock===0){ alert('Brak towaru!'); return; }
-  let cartItem = cart.find(c=>c.id===id);
+  let cartItem=cart.find(c=>c.id===id);
   if(cartItem){
     if(cartItem.quantity<prod.stock) cartItem.quantity++;
-    else{ alert('Brak wystarczającej ilości!'); return; }
-  }else{
-    cart.push({id:prod.id,name:prod.name,price:prod.price,quantity:1});
-  }
+    else { alert('Brak wystarczającej ilości!'); return; }
+  } else cart.push({id:prod.id,name:prod.name,price:prod.price,quantity:1});
   renderCart();
 }
 
+// --- Płatność z resztą ---
 function checkout(){
   if(cart.length===0){ alert('Koszyk pusty!'); return; }
-  // odejmowanie ze stanu magazynowego
+  let total = cart.reduce((sum,item)=>sum+item.price*item.quantity,0);
+  let paid = parseFloat(prompt(`Kwota do zapłaty: ${total} zł\nIle klient płaci?`));
+  if(isNaN(paid) || paid<total){ alert('Niepoprawna kwota!'); return; }
+  let change = paid - total;
+
+  // Odejmowanie ze stanu magazynowego
   cart.forEach(item=>{
-    let prod = products.find(p=>p.id===item.id);
+    let prod=products.find(p=>p.id===item.id);
     prod.stock -= item.quantity;
   });
-  cart=[];
+
+  saveData();
   renderProducts();
   renderCart();
-  alert('Sprzedaż zakończona!');
-  saveData();
+
+  // Pokaż modal z resztą
+  document.getElementById('paid-amount').textContent=`Klient zapłacił: ${paid.toFixed(2)} zł`;
+  document.getElementById('change-amount').textContent=`Reszta do wydania: ${change.toFixed(2)} zł`;
+  document.getElementById('payment-modal').style.display='flex';
+
+  cart=[]; // Wyczyść koszyk
 }
+
+function closePaymentModal(){ document.getElementById('payment-modal').style.display='none'; }
 
 // --- Magazyn ---
 function renderStock(){
-  const list = document.getElementById('stock-list');
-  list.innerHTML='';
-  products.forEach(p=>{
-    let li=document.createElement('li');
-    li.textContent=`${p.name} - Stock: ${p.stock}`;
-    list.appendChild(li);
-  });
+  const list=document.getElementById('stock-list'); list.innerHTML='';
+  products.forEach(p=>{ let li=document.createElement('li'); li.textContent=`${p.name} - Stock: ${p.stock}`; list.appendChild(li); });
 }
 
 function addStock(){
-  let pin = prompt('Wpisz PIN:');
-  if(pin!=='1312'){ alert('Niepoprawny PIN!'); return; }
-  let prodId = parseInt(prompt('ID produktu:'));
-  let qty = parseInt(prompt('Ilość:'));
-  let prod = products.find(p=>p.id===prodId);
-  if(prod){ prod.stock += qty; renderStock(); saveData(); }
-  else alert('Nie znaleziono produktu!');
+  let pin=prompt('Wpisz PIN:'); if(pin!=='1312'){ alert('Niepoprawny PIN!'); return; }
+  let prodId=parseInt(prompt('ID produktu:')); let qty=parseInt(prompt('Ilość:'));
+  let prod=products.find(p=>p.id===prodId); if(prod){ prod.stock+=qty; renderStock(); saveData(); } else alert('Nie znaleziono produktu!');
 }
 
 function removeStock(){
-  let pin = prompt('Wpisz PIN:');
-  if(pin!=='1312'){ alert('Niepoprawny PIN!'); return; }
-  let prodId = parseInt(prompt('ID produktu:'));
-  let qty = parseInt(prompt('Ilość do usunięcia:'));
-  let reason = prompt('Powód straty:');
-  let prod = products.find(p=>p.id===prodId);
-  if(prod){ prod.stock -= qty; if(prod.stock<0) prod.stock=0; renderStock(); saveData(); alert(`Strata: ${reason}`);}
-  else alert('Nie znaleziono produktu!');
+  let pin=prompt('Wpisz PIN:'); if(pin!=='1312'){ alert('Niepoprawny PIN!'); return; }
+  let prodId=parseInt(prompt('ID produktu:')); let qty=parseInt(prompt('Ilość do usunięcia:')); let reason=prompt('Powód straty:');
+  let prod=products.find(p=>p.id===prodId); if(prod){ prod.stock-=qty; if(prod.stock<0) prod.stock=0; renderStock(); saveData(); alert(`Strata: ${reason}`);} else alert('Nie znaleziono produktu!');
 }
 
-function inventory(){
-  let pin = prompt('Wpisz PIN:');
-  if(pin!=='1312'){ alert('Niepoprawny PIN!'); return; }
-  let report='Inwentaryzacja:\n';
-  products.forEach(p=>report+=`${p.name}: ${p.stock}\n`);
-  alert(report);
+function inventory(){ let pin=prompt('Wpisz PIN:'); if(pin!=='1312'){ alert('Niepoprawny PIN!'); return; }
+  let report='Inwentaryzacja:\n'; products.forEach(p=>report+=`${p.name}: ${p.stock}\n`); alert(report);
 }
 
 // --- Klienci ---
-function renderClients(){
-  const list = document.getElementById('client-list');
-  list.innerHTML='';
-  clients.forEach((c,index)=>{
-    let li = document.createElement('li');
-    li.textContent=`${c.name} - saldo: ${c.balance || 0} zł, punkty: ${c.points || 0}`;
-    list.appendChild(li);
-  });
+function renderClients(){ const list=document.getElementById('client-list'); list.innerHTML='';
+  clients.forEach(c=>{ let li=document.createElement('li'); li.textContent=`${c.name} - saldo: ${c.balance||0} zł, punkty: ${c.points||0}`; list.appendChild(li); });
 }
 
-function addClient(){
-  let name = prompt('Imię klienta:');
-  if(name) clients.push({name:name,balance:0,points:0});
-  renderClients();
-  saveData();
-}
+function addClient(){ let name=prompt('Imię klienta:'); if(name) clients.push({name:name,balance:0,points:0}); renderClients(); saveData(); }
 
 // --- Promocje ---
-function renderPromos(){
-  const list = document.getElementById('promo-list');
-  list.innerHTML='';
-  promos.forEach((p,index)=>{
-    let li=document.createElement('li');
-    li.textContent=`${p.name} - ${p.type} ${p.value}`;
-    list.appendChild(li);
-  });
+function renderPromos(){ const list=document.getElementById('promo-list'); list.innerHTML='';
+  promos.forEach(p=>{ let li=document.createElement('li'); li.textContent=`${p.name} - ${p.type} ${p.value}`; list.appendChild(li); });
 }
 
-function addPromo(){
-  let name = prompt('Nazwa promocji:');
-  let type = prompt('Typ (procent/kwota/2+1):');
-  let value = prompt('Wartość (jeśli dotyczy):');
-  if(name && type) promos.push({name,type,value});
-  renderPromos();
-  saveData();
-}
+function addPromo(){ let name=prompt('Nazwa promocji:'); let type=prompt('Typ (procent/kwota/2+1):'); let value=prompt('Wartość (jeśli dotyczy):'); if(name && type) promos.push({name,type,value}); renderPromos(); saveData(); }
 
-// --- Ustawienia ---
-function saveSettings(){
-  storeSettings.name=document.getElementById('storeName').value;
-  storeSettings.address=document.getElementById('storeAddress').value;
-  storeSettings.NIP=document.getElementById('storeNIP').value;
-  storeSettings.VAT=parseFloat(document.getElementById('storeVAT').value);
-  alert('Ustawienia zapisane!');
-  saveData();
-}
-
-// --- Panel admina ---
-function adminPin(){
-  let pin = prompt('Wpisz PIN admina:');
-  if(pin==='1312'){ alert('Panel admina otwarty!'); showSection('settings'); }
-  else alert('Niepoprawny PIN!');
-}
+// --- Ustawienia sklepu ---
+function saveSettings(){ storeSettings.name=document.getElementById('storeName').value; storeSettings.address=document.getElementById('storeAddress').value; storeSettings.NIP=document.getElementById('storeNIP').value; storeSettings.VAT=parseFloat(document.getElementById('storeVAT').value); alert('Ustawienia zapisane!'); saveData(); }
 
 // --- Dane w localStorage ---
-function saveData(){
-  localStorage.setItem('products',JSON.stringify(products));
-  localStorage.setItem('clients',JSON.stringify(clients));
-  localStorage.setItem('promos',JSON.stringify(promos));
-  localStorage.setItem('storeSettings',JSON.stringify(storeSettings));
-}
+function saveData(){ localStorage.setItem('products',JSON.stringify(products)); localStorage.setItem('clients',JSON.stringify(clients)); localStorage.setItem('promos',JSON.stringify(promos)); localStorage.setItem('storeSettings',JSON.stringify(storeSettings)); }
 
 // --- Inicjalizacja ---
 document.getElementById('storeName').value = storeSettings.name;
 document.getElementById('storeAddress').value = storeSettings.address;
 document.getElementById('storeNIP').value = storeSettings.NIP;
 document.getElementById('storeVAT').value = storeSettings.VAT;
-
-renderProducts();
-renderCart();
-renderStock();
-renderClients();
-renderPromos();
+renderProducts(); renderCart(); renderStock(); renderClients(); renderPromos();
 </script>
 </body>
-  </html>
+</html>
