@@ -1,87 +1,187 @@
-Neon WebApp — PIN 1312 :root{ --bg:#07060a; --panel:#0d0b12; --accent1:#00ffd5; --accent2:#ff4dff; --accent3:#ffd500; --muted:#9aa0a6; --glass: rgba(255,255,255,0.03); } html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#e6f7ff;background:linear-gradient(180deg,#040405 0%, #0b0710 100%);} .app{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:18px;} .card{width:100%;max-width:520px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.03)} header{display:flex;align-items:center;gap:12px;margin-bottom:14px} .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;color:#061018;font-weight:700;box-shadow:0 6px 18px rgba(0,255,213,0.06);font-size:20px} h1{font-size:20px;margin:0;color:#eaffff;letter-spacing:0.2px} p.lead{margin:6px 0 12px;color:var(--muted);font-size:13px} .row{display:flex;gap:10px;flex-wrap:wrap} .btn{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#03060a;border:none;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;box-shadow:0 8px 30px rgba(0,255,213,0.06);transition:transform .12s;display:inline-flex;align-items:center;gap:8px;} .btn:active{transform:translateY(2px)} .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);box-shadow:none} .tile{background:var(--panel);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);flex:1;min-width:140px} .muted{color:var(--muted);font-size:13px} .status{display:inline-block;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,rgba(0,255,213,0.06),rgba(255,77,255,0.04));color:var(--accent1);font-weight:700} .neon-accent{color:var(--accent2);text-shadow:0 4px 20px rgba(255,77,255,0.12)} footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center;} /* PIN modal */ .modal-back{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.7));z-index:60;padding:20px} .modal{width:100%;max-width:420px;background:linear-gradient(180deg, rgba(10,8,12,0.95), rgba(6,5,8,0.98));border-radius:14px;padding:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(0,0,0,0.7)} .pin-dots{display:flex;gap:10px;margin:18px 0;justify-content:center} .dot{width:14px;height:14px;border-radius:999px;background:transparent;border:1px solid rgba(255,255,255,0.06)} .dot.filled{background:var(--accent1);box-shadow:0 6px 18px rgba(0,255,213,0.08)} .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px} .key{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:14px;border-radius:10px;text-align:center;font-weight:700;color:#e9fbff;border:1px solid rgba(255,255,255,0.03);cursor:pointer} .small{font-size:13px;color:var(--muted)} .row-between{display:flex;justify-content:space-between;align-items:center} .switch{display:inline-flex;gap:8px;align-items:center} .accent-pill{padding:6px 10px;border-radius:999px;background:linear-gradient(90deg,var(--accent3),var(--accent1));color:#0b0810;font-weight:700} .log{margin-top:10px;background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;color:var(--muted);font-size:13px;max-height:160px;overflow:auto} @media (max-width:420px){.card{padding:14px}} 
-NW
-Neon WebApp
-Prosty Telegram Web App — PIN 1312 do autoryzacji wybranych akcji.
-Niezalogowany
- 
-<div class="row" style="margin-bottom:12px">
-  <div class="tile">
-    <div class="row-between">
-      <div>
-        <div class="muted">Automatyczne zadanie</div>
-        <div style="margin-top:6px;font-weight:700;color:#eaffff">Scheduler</div>
-      </div>
-      <div>
-        <button class="btn ghost" id="toggleAutoBtn">Włącz</button>
-      </div>
-    </div>
-    <div class="muted" style="margin-top:10px">Po włączeniu webapp będzie uruchamiał próbne zadanie co 10s (symulacja). Nie wymaga PIN. Możesz zatrzymać.</div>
-  </div>
-
-  <div class="tile">
-    <div class="row-between">
-      <div>
-        <div class="muted">Funkcja chroniona</div>
-        <div style="margin-top:6px;font-weight:700;color:#eaffff">Wrażliwe polecenie</div>
-      </div>
-      <div>
-        <button class="btn" id="protectedBtn">WYKONAJ</button>
-      </div>
-    </div>
-    <div class="muted" style="margin-top:10px">Ta akcja poprosi o PIN (1312). Po udanej autoryzacji zapamięta status (localStorage).</div>
-  </div>
-</div>
-
-<div class="row" style="margin-bottom:8px">
-  <div class="tile" style="flex:1 1 100%">
-    <div class="row-between">
-      <div>
-        <div class="muted">Interakcja z Telegram</div>
-        <div style="margin-top:6px;font-weight:700;color:#eaffff">Wyślij dane do bota</div>
-      </div>
-      <div>
-        <button class="btn ghost" id="sendDataBtn">Wyślij</button>
-      </div>
-    </div>
-    <div class="muted" style="margin-top:10px">Jeśli aplikacja zostanie otwarta wewnątrz Telegrama, wyśle dane do bota (tg.sendData). Poza Telegramem pokaże powiadomienie lokalne.</div>
-  </div>
-</div>
-
-<div class="row" style="margin-top:10px;align-items:center">
-  <div class="muted">Tryb kolorów:</div>
-  <div class="accent-pill neon-accent" id="themeLabel">Ciemny neon</div>
-  <div style="flex:1"></div>
-  <button class="btn ghost" id="logoutBtn">Wyloguj PIN</button>
-</div>
-
-<div class="log" id="log">Log: aplikacja uruchomiona.</div>
-
-<footer>Gotowe — PIN = 1312. Użyj przycisku "WYKONAJ" dla funkcji chronionej.</footer>
- 
-
-Wprowadź PIN
-Użyj kodu 4-cyfrowego, aby autoryzować akcję.
-Max 5 prób
- 
-<div class="pin-dots" id="dots">
-  <div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div>
-</div>
-
-<div class="keypad" id="keypad">
-  <div class="key">1</div><div class="key">2</div><div class="key">3</div>
-  <div class="key">4</div><div class="key">5</div><div class="key">6</div>
-  <div class="key">7</div><div class="key">8</div><div class="key">9</div>
-  <div class="key ghost" id="clearKey">C</div><div class="key">0</div><div class="key ghost" id="backKey">⌫</div>
-</div>
-
-<div style="display:flex;justify-content:space-between;margin-top:12px;align-items:center">
-  <div class="small">Autoryzacja lokalna (pamięć)</div>
+<!DOCTYPE html><html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>POS Mobile PRO</title>
+<style>
+:root{
+  --bg:#0e0e0e;--card:#1b1b1b;--accent:#2979ff;--ok:#2ecc71;--err:#e74c3c;--warn:#f1c40f;--txt:#f5f5f5;--muted:#888;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--txt)}
+.hidden{display:none}
+.section{padding:12px 12px 90px}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px}
+.row{display:flex;gap:8px;align-items:center}
+.col{flex:1}
+input,select,button,textarea{width:100%;padding:12px;border-radius:10px;border:none;background:#232323;color:#fff;font-size:16px}
+button{background:var(--accent);font-weight:600}
+button.ok{background:var(--ok)}
+button.err{background:var(--err)}
+button.warn{background:var(--warn);color:#000}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#111;border-top:1px solid #222}
+nav button{flex:1;background:#111;color:#aaa;border-radius:0;font-size:13px;padding:10px}
+nav button.active{background:var(--accent);color:#fff}
+.product{display:flex;justify-content:space-between;gap:10px}
+.badge{font-size:12px;color:#000;background:#ccc;border-radius:999px;padding:2px 8px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal>div{background:var(--card);border-radius:14px;padding:16px;width:92%;max-height:90vh;overflow:auto}
+.list{display:flex;flex-direction:column;gap:8px}
+hr{border:none;border-top:1px solid #2a2a2a;margin:10px 0}
+.small{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body><!-- MODAL --><div id="modal" class="modal hidden"><div id="modalContent"></div></div><!-- LOGIN / KASA --><div id="login" class="modal">
   <div>
-    <button class="btn ghost" id="cancelPin">Anuluj</button>
-    <button class="btn" id="confirmPin" style="display:none">Potwierdź</button>
+    <h2>🔐 PIN</h2>
+    <input id="pinInput" type="tel" inputmode="numeric" placeholder="PIN">
+    <button onclick="login()">Zaloguj</button>
   </div>
-</div>
- 
+</div><div id="app" class="hidden">
+  <div id="sale" class="section"></div>
+  <div id="orders" class="section hidden"></div>
+  <div id="clients" class="section hidden"></div>
+  <div id="stock" class="section hidden"></div>
+  <div id="reports" class="section hidden"></div>
+  <div id="settings" class="section hidden"></div>  <nav>
+    <button class="active" onclick="view('sale')">Sprzedaż</button>
+    <button onclick="view('orders')">Zamówienia</button>
+    <button onclick="view('clients')">Klienci</button>
+    <button onclick="view('stock')">Magazyn</button>
+    <button onclick="view('reports')">Raporty</button>
+    <button onclick="view('settings')">Ustawienia</button>
+  </nav>
+</div><script>
+/********************* PINY *************************/
+const PIN_ADMIN='1312';
+const PIN_CASH_OPEN='1111';
+const PIN_DELIVERY='2222';
 
-/* --- Konfiguracja --- */ const PROTECTED_PIN = "1312"; // PIN (twardo ustawiony) const MAX_TRIES = 5; /* --- Proste API Telegram detection --- */ const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null; /* --- Elementy --- */ const authStatus = document.getElementById('authStatus'); const logEl = document.getElementById('log'); const protectedBtn = document.getElementById('protectedBtn'); const pinModal = document.getElementById('pinModal'); const dots = [document.getElementById('d1'),document.getElementById('d2'),document.getElementById('d3'),document.getElementById('d4')]; const keypad = document.getElementById('keypad'); const clearKey = document.getElementById('clearKey'); const backKey = document.getElementById('backKey'); const cancelPin = document.getElementById('cancelPin'); const confirmPin = document.getElementById('confirmPin'); const triesLeft = document.getElementById('triesLeft'); const toggleAutoBtn = document.getElementById('toggleAutoBtn'); const sendDataBtn = document.getElementById('sendDataBtn'); const logoutBtn = document.getElementById('logoutBtn'); let inputPin = ""; let tries = 0; let auth = false; let autoRunning = false; let autoInterval = null; /* --- Helpers --- */ function appendLog(text){ const t = new Date().toLocaleTimeString(); logEl.innerHTML = t + " — " + text + "
-" + logEl.innerHTML; } /* --- Auth state from localStorage --- */ function loadAuth(){ try{ const v = localStorage.getItem('neon_webapp_auth_v1'); if(v === '1'){ auth = true; authStatus.textContent = 'Autoryzowany'; authStatus.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent1'); } else { auth = false; authStatus.textContent = 'Niezalogowany'; authStatus.style.color = '#f3f6fa'; } }catch(e){ auth=false; } } function saveAuth(val){ try{ localStorage.setItem('neon_webapp_auth_v1', val ? '1' : '0'); }catch(e){} loadAuth(); } /* --- PIN modal controls --- */ function openPinModal(){ inputPin = ""; tries = 0; updateDots(); triesLeft.textContent = `Max ${MAX_TRIES} prób`; pinModal.style.display = 'flex'; confirmPin.style.display = 'none'; } function closePinModal(){ pinModal.style.display = 'none'; } function updateDots(){ for(let i=0;i<4;i++){ dots[i].classList.toggle('filled', i < inputPin.length); } confirmPin.style.display = (inputPin.length === 4) ? 'inline-flex' : 'none'; } keypad.addEventListener('click', (e)=>{ const t = e.target; if(!t.classList.contains('key')) return; const v = t.textContent.trim(); if(v === 'C'){ inputPin = ''; updateDots(); return; } if(v === '⌫'){ inputPin = inputPin.slice(0,-1); updateDots(); return; } if(inputPin.length < 4){ inputPin += v; updateDots(); } }); cancelPin.addEventListener('click', ()=>{ closePinModal(); appendLog('PIN anulowany'); }); confirmPin.addEventListener('click', ()=>{ if(inputPin === PROTECTED_PIN){ auth = true; saveAuth(true); appendLog('PIN poprawny — autoryzowano'); closePinModal(); // wykonaj akcję chronioną (callback) if(typeof protectedActionCallback === 'function') protectedActionCallback(true); } else { tries++; appendLog('Nieprawidłowy PIN'); if(tries >= MAX_TRIES){ appendLog('Przekroczono liczbę prób — zablokowano tymczasowo'); closePinModal(); } else triesLeft.textContent = `${MAX_TRIES - tries} prób pozostało`; inputPin = ''; updateDots(); if(typeof protectedActionCallback === 'function') protectedActionCallback(false); } }); /* --- Protected action flow --- */ let protectedActionCallback = null; protectedBtn.addEventListener('click', ()=>{ // Jeżeli już autoryzowany -> wykonaj od razu if(auth){ doProtectedAction(); return; } // Inaczej otwórz PIN modal, ustaw callback protectedActionCallback = function(success){ if(success){ doProtectedAction(); protectedActionCallback = null; } }; openPinModal(); }); function doProtectedAction(){ appendLog('Wykonano akcję chronioną ✅'); alert('Akcja chroniona została wykonana (przykład).'); } /* --- Logout --- */ logoutBtn.addEventListener('click', ()=>{ saveAuth(false); appendLog('Wylogowano (PIN)'); }); /* --- Auto task simulation --- */ toggleAutoBtn.addEventListener('click', ()=>{ autoRunning = !autoRunning; if(autoRunning){ toggleAutoBtn.textContent = 'Wyłącz'; appendLog('Automatyczny scheduler uruchomiony'); autoInterval = setInterval(()=>{ appendLog('Scheduler: próbne zadanie (symulacja)'); }, 10000); // 10s } else { toggleAutoBtn.textContent = 'Włącz'; appendLog('Automatyczny scheduler zatrzymany'); clearInterval(autoInterval); autoInterval = null; } }); /* --- Send data to Telegram or fallback --- */ sendDataBtn.addEventListener('click', ()=>{ const payload = {time:Date.now(), info:'Przykładowe dane z WebApp'}; if(tg && typeof tg.sendData === 'function'){ try{ tg.sendData(JSON.stringify(payload)); appendLog('Wysłano dane do bota przez tg.sendData'); } catch(e){ appendLog('Błąd wysyłki do Telegram: '+String(e)); alert('Błąd wysyłki do Telegram.'); } } else { appendLog('Środowisko poza Telegramem — pokazuję dane lokalnie'); alert('Dane: ' + JSON.stringify(payload)); } }); /* --- Init --- */ loadAuth(); appendLog('Aplikacja gotowa.'); // Jeśli aplikacja uruchamiana wewnątrz Telegram — poinformuj if(tg && tg.initDataRaw){ appendLog('Uruchomiono wewnątrz Telegram WebApp'); // tg.expand(); // opcjonalnie rozszerz } /* --- Accessibility: blokada backKey default --- */ window.addEventListener('keydown', (e)=>{ if(pinModal.style.display === 'flex'){ if(e.key === 'Escape'){ closePinModal(); } if(e.key >= '0' && e.key <= '9'){ if(inputPin.length<4){ inputPin+=e.key; updateDots(); } } if(e.key === 'Backspace'){ inputPin = inputPin.slice(0,-1); updateDots(); } if(e.key === 'Enter' && inputPin.length===4){ confirmPin.click(); } } }); /* --- Extra: automatyczne zapamiętywanie sesji (opcjonalne) --- */ window.addEventListener
+/********************* LOCAL DB *************************/
+const DB={
+  load(){return JSON.parse(localStorage.getItem('POS_DB'))||null},
+  save(){localStorage.setItem('POS_DB',JSON.stringify(state))}
+};
+
+/********************* STATE *************************/
+let state=DB.load()||{
+  shop:{name:'Sklep POS',tax:23,theme:'dark',color:'#2979ff'},
+  cash:{open:false,openAmount:0,closeAmount:0,day:new Date().toDateString()},
+  payments:['Gotówka','BLIK','Karta','Przelew','Punkty'],
+  deliveryZones:{'Centrum':20,'Nowa Huta':25,'Południe':30,'Inne':35},
+  products:[
+    {id:1,name:'Produkt A',cat:'Ogólne',buy:5,sell:10,stock:5,unit:'szt',supplier:'Dostawca 1'}
+  ],
+  suppliers:[{id:1,name:'Dostawca 1'}],
+  clients:[],
+  promos:[{type:'2+1',productId:1}],
+  sales:[],
+  orders:[],
+  cart:[],
+  activeClient:null
+};
+
+/********************* UTILS *************************/
+const $=id=>document.getElementById(id);
+function save(){DB.save()}
+function view(v){document.querySelectorAll('.section').forEach(s=>s.classList.add('hidden'));$(v).classList.remove('hidden');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));event.target.classList.add('active')}
+function modal(html,cb){$('modalContent').innerHTML=html;$('modal').classList.remove('hidden');if(cb)window._modalCb=cb}
+function closeModal(){$('modal').classList.add('hidden');window._modalCb=null}
+
+/********************* LOGIN *************************/
+function login(){
+  if($('pinInput').value===PIN_CASH_OPEN){state.cash.open=true;save();$('login').classList.add('hidden');$('app').classList.remove('hidden');renderSale()}
+  else alert('Zły PIN')
+}
+
+/********************* SALE *************************/
+function renderSale(){
+  let h=`<h2>🧾 Sprzedaż</h2>`;
+  state.products.forEach(p=>{
+    h+=`<div class='card product'><div><b>${p.name}</b><br><span class='small'>${p.sell} PLN | Stan: ${p.stock}</span></div><button onclick='addToCart(${p.id})'>Dodaj</button></div>`;
+  });
+  h+=`<hr><div class='card'><h3>Koszyk</h3>`;
+  let total=0;
+  state.cart.forEach((c,i)=>{total+=c.sell*c.qty;h+=`<div class='row'><div class='col'>${c.name} x ${c.qty}</div><div>${c.sell*c.qty} PLN</div><button onclick='inc(${i})'>+</button><button onclick='dec(${i})'>-</button></div>`});
+  h+=`<hr><b>Suma: ${total} PLN</b><button class='ok' onclick='checkout()'>Zakończ</button></div>`;
+  $('sale').innerHTML=h;
+}
+
+function addToCart(id){
+  let p=state.products.find(x=>x.id===id);
+  if(p.stock<=0){
+    modal(`<h3>Brak stanu</h3><input id='mpin' type='tel' placeholder='PIN'><button class='ok' onclick="if($('mpin').value==='${PIN_ADMIN}'){$('modal').classList.add('hidden');forceAdd(${id})}else alert('Zły PIN')">Wymuś</button>`);
+  }else forceAdd(id)
+}
+function forceAdd(id){
+  let p=state.products.find(x=>x.id===id);
+  let c=state.cart.find(x=>x.id===id);
+  if(c)c.qty++; else state.cart.push({...p,qty:1});
+  save();renderSale()
+}
+function inc(i){state.cart[i].qty++;renderSale();save()}
+function dec(i){state.cart[i].qty--;if(state.cart[i].qty<=0)state.cart.splice(i,1);renderSale();save()}
+
+/********************* CHECKOUT *************************/
+function checkout(){
+  let total=state.cart.reduce((s,c)=>s+c.sell*c.qty,0);
+  modal(`<h3>Płatność</h3>
+  <select id='pay1'>${state.payments.map(p=>`<option>${p}</option>`)}</select>
+  <input id='amt1' type='number' placeholder='Kwota'>
+  <select id='pay2'>${state.payments.map(p=>`<option>${p}</option>`)}</select>
+  <input id='amt2' type='number' placeholder='Kwota'>
+  <p>Suma: ${total} PLN</p>
+  <button class='ok' onclick='finishSale(${total})'>Zatwierdź</button>`)
+}
+function finishSale(total){
+  let a1=Number($('amt1').value||0),a2=Number($('amt2').value||0);
+  if(a1+a2<total){alert('Za mało');return}
+  state.cart.forEach(c=>{let p=state.products.find(x=>x.id===c.id);if(p.stock>0)p.stock-=c.qty});
+  state.sales.push({date:new Date(),items:state.cart,total});
+  state.cart=[];save();closeModal();renderSale();alert('Sprzedaż OK')
+}
+
+/********************* ORDERS *************************/
+function renderOrders(){
+  let h=`<h2>📦 Zamówienia</h2><button onclick='newOrder()'>Nowe</button>`;
+  state.orders.forEach(o=>{h+=`<div class='card'>${o.client} | ${o.date} | ${o.total} PLN | ${o.zone}</div>`});
+  $('orders').innerHTML=h
+}
+function newOrder(){
+  modal(`<h3>Nowe zamówienie</h3><input id='oclient' placeholder='Klient'><input id='odate' type='date'><select id='ozone'>${Object.keys(state.deliveryZones).map(z=>`<option>${z}</option>`)}</select><button class='ok' onclick='saveOrder()'>Zapisz</button>`)
+}
+function saveOrder(){
+  let zone=$('ozone').value;let fee=state.deliveryZones[zone];
+  state.orders.push({client:$('oclient').value,date:$('odate').value,zone,total:fee});save();closeModal();renderOrders()
+}
+
+/********************* CLIENTS *************************/
+function renderClients(){
+  let h=`<h2>👥 Klienci</h2><button onclick='addClient()'>Dodaj</button>`;
+  state.clients.forEach(c=>h+=`<div class='card'>${c.name} | Punkty: ${c.points}</div>`);
+  $('clients').innerHTML=h
+}
+function addClient(){modal(`<h3>Klient</h3><input id='cname'><button class='ok' onclick="state.clients.push({name:$('cname').value,points:0,history:[]});save();closeModal();renderClients()">Zapisz</button>`)}
+
+/********************* STOCK *************************/
+function renderStock(){
+  let h=`<h2>📊 Magazyn</h2>`;
+  state.products.forEach(p=>h+=`<div class='card'>${p.name} | ${p.stock} | ${p.sell} PLN</div>`);
+  $('stock').innerHTML=h
+}
+
+/********************* REPORTS *************************/
+function renderReports(){
+  let profit=0;state.sales.forEach(s=>profit+=s.total);
+  $('reports').innerHTML=`<h2>📈 Raport</h2><div class='card'>Sprzedaż: ${state.sales.length}<br>Obrót: ${profit} PLN</div>`
+}
+
+/********************* SETTINGS *************************/
+function renderSettings(){
+  $('settings').innerHTML=`<h2>⚙️ Ustawienia</h2><div class='card'><input value='${state.shop.name}' onchange="state.shop.name=this.value;save()"><input type='number' value='${state.shop.tax}' onchange="state.shop.tax=this.value;save()"></div>`
+}
+
+/********************* INIT *************************/
+renderSale();renderOrders();renderClients();renderStock();renderReports();renderSettings();
+</script></body>
+</html>
