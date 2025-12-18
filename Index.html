@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>POS Mobile</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2979ff">
+
+<style>
+:root{
+ --bg:#0e0e0e;--card:#1b1b1b;--accent:#2979ff;
+ --ok:#2ecc71;--err:#e74c3c;--txt:#fff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--txt)}
+.hidden{display:none}
+.section{padding:12px 12px 90px}
+.card{background:var(--card);padding:14px;border-radius:14px;margin-bottom:10px}
+.row{display:flex;gap:6px;align-items:center}
+.col{flex:1}
+button,input,select{
+ width:100%;padding:12px;border-radius:10px;
+ border:none;background:#222;color:#fff;font-size:16px
+}
+button{background:var(--accent);font-weight:600}
+button.ok{background:var(--ok)}
+button.err{background:var(--err)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#111}
+nav button{flex:1;background:#111;color:#aaa;border-radius:0;font-size:13px}
+nav button.active{background:var(--accent);color:#fff}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);
+ display:flex;align-items:center;justify-content:center;z-index:999}
+.modal>div{background:var(--card);padding:16px;border-radius:14px;width:90%}
+</style>
+</head>
+<body>
+
+<!-- MODAL -->
+<div id="modal" class="modal hidden">
+ <div id="modalContent"></div>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="modal">
+ <div>
+  <h2>🔐 Otwórz kasę</h2>
+  <input id="pin" type="tel" inputmode="numeric" placeholder="PIN">
+  <button onclick="login()">Otwórz</button>
+ </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+ <div id="sale" class="section"></div>
+ <div id="orders" class="section hidden"></div>
+ <div id="clients" class="section hidden"></div>
+
+ <nav>
+  <button class="active" onclick="view('sale',this)">Sprzedaż</button>
+  <button onclick="view('orders',this)">Zamówienia</button>
+  <button onclick="view('clients',this)">Klienci</button>
+ </nav>
+</div>
+
+<script>
+/* ===== PINY ===== */
+const PIN_OPEN="1111";
+const PIN_FORCE="1312";
+
+/* ===== BAZA (LocalStorage) ===== */
+let state = JSON.parse(localStorage.getItem("POS_DB")) || {
+ products:[
+  {id:1,name:"Produkt A",price:10,stock:5},
+  {id:2,name:"Produkt B",price:20,stock:0}
+ ],
+ cart:[],
+ clients:[],
+ orders:[]
+};
+function save(){localStorage.setItem("POS_DB",JSON.stringify(state));}
+
+/* ===== UI ===== */
+function view(id,btn){
+ document.querySelectorAll(".section").forEach(s=>s.classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+ document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
+}
+function modal(html){
+ document.getElementById("modalContent").innerHTML=html+
+ '<button class="ok" onclick="closeModal()">OK</button>';
+ document.getElementById("modal").classList.remove("hidden");
+}
+function closeModal(){document.getElementById("modal").classList.add("hidden");}
+
+/* ===== LOGIN ===== */
+function login(){
+ if(document.getElementById("pin").value===PIN_OPEN){
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  renderSale();
+ } else alert("Zły PIN");
+}
+
+/* ===== SPRZEDAŻ ===== */
+function renderSale(){
+ let h="<h2>🧾 Sprzedaż</h2>";
+ state.products.forEach(p=>{
+  h+=`<div class='card row'>
+   <div class='col'><b>${p.name}</b><br>${p.price} PLN | Stan ${p.stock}</div>
+   <button onclick='add(${p.id})'>+</button>
+  </div>`;
+ });
+ let sum=0;
+ h+="<div class='card'><h3>Koszyk</h3>";
+ state.cart.forEach((c,i)=>{
+  sum+=c.price*c.qty;
+  h+=`<div class='row'>
+   <div class='col'>${c.name} x ${c.qty}</div>
+   <button onclick='inc(${i})'>+</button>
+   <button onclick='dec(${i})'>-</button>
+  </div>`;
+ });
+ h+=`<b>Suma: ${sum} PLN</b>
+ <button class='ok' onclick='pay(${sum})'>Zakończ</button></div>`;
+ document.getElementById("sale").innerHTML=h;
+}
+function add(id){
+ let p=state.products.find(x=>x.id===id);
+ if(p.stock<=0){
+  modal(`<h3>Brak stanu</h3>
+  <input id='fpin' type='tel' placeholder='PIN'>
+  <button class='err' onclick=\"if(document.getElementById('fpin').value==='${PIN_FORCE}')force(${id})\">Wymuś</button>`);
+ } else force(id);
+}
+function force(id){
+ let p=state.products.find(x=>x.id===id);
+ let c=state.cart.find(x=>x.id===id);
+ if(c)c.qty++; else state.cart.push({...p,qty:1});
+ save();closeModal();renderSale();
+}
+function inc(i){state.cart[i].qty++;save();renderSale();}
+function dec(i){state.cart[i].qty--;if(state.cart[i].qty<=0)state.cart.splice(i,1);save();renderSale();}
+
+/* ===== PŁATNOŚĆ ===== */
+function pay(sum){
+ modal(`<h3>Płatność</h3>
+  <select><option>Gotówka</option><option>BLIK</option><option>Karta</option></select>
+  <input type='number' placeholder='Kwota'>
+  <p>Suma: ${sum} PLN</p>`);
+ state.cart=[];save();renderSale();
+}
+
+/* ===== ZAMÓWIENIA ===== */
+function renderOrders(){
+ let h="<h2>📦 Zamówienia</h2><button onclick='newOrder()'>Nowe</button>";
+ state.orders.forEach(o=>h+=`<div class='card'>${o.client} | ${o.date}</div>`);
+ document.getElementById("orders").innerHTML=h;
+}
+function newOrder(){
+ modal(`<h3>Zamówienie</h3>
+ <input id='oc' placeholder='Telefon'>
+ <input id='od' type='date'>
+ <button onclick='saveOrder()'>Zapisz</button>`);
+}
+function saveOrder(){
+ state.orders.push({
+  client:document.getElementById("oc").value,
+  date:document.getElementById("od").value
+ });
+ save();closeModal();renderOrders();
+}
+
+/* ===== KLIENCI ===== */
+function renderClients(){
+ let h="<h2>👥 Klienci</h2><button onclick='newClient()'>Dodaj</button>";
+ state.clients.forEach(c=>h+=`<div class='card'>${c.name} | Punkty ${c.points}</div>`);
+ document.getElementById("clients").innerHTML=h;
+}
+function newClient(){
+ modal(`<h3>Klient</h3>
+ <input id='cn' placeholder='Imię'>
+ <button onclick=\"state.clients.push({name:cn.value,points:0});save();closeModal();renderClients()\">Zapisz</button>`);
+}
+
+renderOrders();renderClients();
+</script>
+
+<script>
+if("serviceWorker" in navigator){
+ navigator.serviceWorker.register("sw.js");
+}
+</script>
+
+</body>
+  </html>
